@@ -14,7 +14,7 @@ import {
   import Job from './pages/job';
 
 function App() {
-    const [login, setLogin] = useState(true); // not logged in initially
+    const [login, setLogin] = useState(false); // not logged in initially
     const toggleLogin = () => {
       setLogin(!login);
       login === false ? window.location.href = "#home" : window.location.href = "#";
