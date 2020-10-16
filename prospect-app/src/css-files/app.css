@@ -1,4 +1,39 @@
-.navBar-bg {
-    background: blue;
-    width: 100vw;
+* h1 {
+    font-size: 50px;
+}
+
+.login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; 
+}
+
+.login-bg {
+    display: flex;
+    background: #F5F5F5;
+    border-radius: 30px;
+    min-height: 80vh;
+    justify-content: center;
+    align-content: center;
+}
+
+.login-content {
+    width: 500px;
+    text-align: center;
+    padding-top: 20%;
+}
+
+.login-content p {
+    margin-top: 45%;
+    padding-bottom: 5%;
+}
+
+.login-form {
+    padding-top: 30%;
+    text-align: left;
+}
+
+.login-form label {
+    margin-left: 2.5%;
 }

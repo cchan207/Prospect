@@ -20,9 +20,9 @@ export default function NavigationBar() {
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="mr-auto">
-                <Nav.Link href="#">Home</Nav.Link>
+                <Nav.Link href="#home">Home</Nav.Link>
                 <NavDropdown title="Jobs" id="basic-nav-dropdown">
-                    <NavDropdown.Item href="#">Dashboard</NavDropdown.Item>
+                    <NavDropdown.Item href="#job">Dashboard</NavDropdown.Item>
                 </NavDropdown>
                 </Nav>
                 <Nav className="mr-auto" className="justify-content-end">

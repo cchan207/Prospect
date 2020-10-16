@@ -9,8 +9,8 @@ import {
     Route
   } from "react-router-dom";
 
-  import Home from './pages/landingpage';
   import Login from './pages/login';
+  import Home from './pages/landingpage';
   import Job from './pages/job';
 
 function App() {
