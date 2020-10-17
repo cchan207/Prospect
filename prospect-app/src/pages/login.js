@@ -1,4 +1,4 @@
-import React , { useEffect } from 'react';
+import React , { useEffect, useContext } from 'react';
 
 import '../css-files/app.css';
 
@@ -6,11 +6,17 @@ import Navbar from '../components/navbar';
 import Container from '@material-ui/core/Container';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import AppContext from '../components/context';
 
 export default function LandingPage() {
     useEffect(() => {
         window.scrollTo(0, 0)
     }, [])
+
+    const loginContext = useContext(AppContext);
+    /*const handleClick = () => {
+        window.location.href = "#home";
+    }*/
 
     return (
         <div>
@@ -31,11 +37,11 @@ export default function LandingPage() {
                                 <Form.Control type="password" placeholder="Password" />
                             </Form.Group>
                             </Form>
-                            <Button variant="secondary" type="submit">
+                            <Button block variant="dark" type="submit" onClick={loginContext.toggleLogin}>
                                 Log In
                             </Button>
-                            <p>
-                                Don't have an account? Sign Up
+                            <p> 
+                                Don't have an account? <a href="#">Sign Up</a> 
                             </p>
                         </div>
                     </Container>
@@ -44,3 +50,6 @@ export default function LandingPage() {
         </div>
     )
 }
+
+// TODO: link to sign up page
+// TODO: go to db for log in authentication
