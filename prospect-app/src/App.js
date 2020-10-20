@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import AppContext from './components/context';
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Auth0Provider } from "@auth0/auth0-react";
 
 import {
     HashRouter as Router,
@@ -19,7 +20,7 @@ function App() {
       setLogin(!login);
       login === false ? window.location.href = "#home" : window.location.href = "#";
     }
-  
+
     const userSettings = {
       loginState: login,
       toggleLogin,
@@ -38,7 +39,13 @@ function App() {
 
 ReactDOM.render(
     <Router>
-      <App />
+        <Auth0Provider
+            domain="prospect-jobs.us.auth0.com"
+            clientId="rFKAUuhFOosR4gMNkekfsActq1slvs0g"
+            redirectUri={window.location.origin}
+        >
+        <App />
+      </Auth0Provider>
     </Router>,
     document.getElementById("root")
   );
