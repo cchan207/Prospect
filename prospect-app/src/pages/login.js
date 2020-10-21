@@ -36,7 +36,7 @@ export default function LandingPage() {
                                 Log In
                             </Button>
                             <p> 
-                                Don't have an account? <a href="#">Sign Up</a> 
+                                Don't have an account? <a href="/signup">Sign Up</a> 
                             </p>
                         </div>
                     </Container>
