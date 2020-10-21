@@ -10,7 +10,7 @@ export default function LandingPage() {
     return (
         <div>
             <Navbar />
-            JOB
+            JOB DASHBOARD
         </div>
     )
 }

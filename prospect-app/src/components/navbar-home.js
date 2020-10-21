@@ -14,24 +14,28 @@ export default function NavigationBar() {
     }
     const checkAuthJob = () => {
         loginContext.loginState === true ? window.location.href = "#job" : window.location.href = "#";
-    }*/
+    }
+    
+    
+    <Nav.Link onClick={loginContext.toggleLogin}>
+        {loginContext.loginState === false ? "Log in" : "Log out"}
+     </Nav.Link>
+    */
 
     return (
         <Navbar bg="light" expand="lg">
-            <Navbar.Brand href="#home">PROSPECT</Navbar.Brand>
+            <Navbar.Brand href="/home">PROSPECT</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="mr-auto">
-                <Nav.Link href="#home">Home</Nav.Link>
+                <Nav.Link href="/home">Home</Nav.Link>
                 <NavDropdown title="Jobs" id="basic-nav-dropdown">
-                    <NavDropdown.Item>Add new job</NavDropdown.Item>
+                    <NavDropdown.Item href="/add-job">Add new job</NavDropdown.Item>
                 </NavDropdown>
-                <Nav.Link href="#about">About us</Nav.Link>
+                <Nav.Link href="/about">About us</Nav.Link>
                 </Nav>
                 <Nav className="mr-auto" className="justify-content-end">
-                    <Nav.Link onClick={loginContext.toggleLogin}>
-                        {loginContext.loginState === false ? "Log in" : "Log out"}
-                    </Nav.Link>
+                    <Nav.Link href="/">Log out</Nav.Link>
                 </Nav>
             </Navbar.Collapse>
             </Navbar>

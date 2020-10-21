@@ -32,7 +32,7 @@ export default function LandingPage() {
                                 <Form.Control type="password" placeholder="Password" />
                             </Form.Group>
                             </Form>
-                            <Button block variant="dark" type="submit" onClick={loginContext.toggleLogin}>
+                            <Button block variant="dark" type="submit" href="/home">
                                 Log In
                             </Button>
                             <p> 

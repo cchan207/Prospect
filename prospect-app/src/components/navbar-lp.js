@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { HashLink as Link } from 'react-router-hash-link';
 import '../css-files/app.css';
 import AppContext from '../components/context';
 
@@ -23,16 +23,14 @@ export default function NavigationBar() {
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="mr-auto">
-                <Nav.Link>About us</Nav.Link>
+                <Nav.Link href="/about">About us</Nav.Link>
                 <NavDropdown title="Features" id="basic-nav-dropdown">
-                    <NavDropdown.Item href="#">Dashboard</NavDropdown.Item>
-                    <NavDropdown.Item href="#">Notes</NavDropdown.Item>
+                    <NavDropdown.Item href="/#dashboard">Dashboard</NavDropdown.Item>
+                    <NavDropdown.Item href="/#notes">Notes</NavDropdown.Item>
                 </NavDropdown>
                 </Nav>
                 <Nav className="mr-auto" className="justify-content-end">
-                    <Nav.Link onClick={loginContext.toggleLogin}>
-                        {loginContext.loginState === false ? "Log in" : "Log out"}
-                    </Nav.Link>
+                    <Nav.Link href="/login">Log in</Nav.Link>
                 </Nav>
             </Navbar.Collapse>
             </Navbar>
