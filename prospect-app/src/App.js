@@ -10,8 +10,11 @@ import {
   } from "react-router-dom";
 
   import Login from './pages/login';
-  import Home from './pages/landingpage';
-  import Job from './pages/job';
+  import SignUp from './pages/signup';
+  import LandingPage from './pages/landingpage';
+  import Home from './pages/job';
+  import About from './pages/about';
+  import Job from './pages/newjob';
 
 function App() {
     const [login, setLogin] = useState(false); // not logged in initially
@@ -28,9 +31,12 @@ function App() {
     return (
         <AppContext.Provider value={userSettings}>
             <Switch>
-                <Route exact path="/" component={Login} />
+                <Route exact path="/" component={LandingPage} />
+                <Route exact path="/login" component={Login} />
+                <Route exact path="/signup" component={Login} />
                 <Route exact path="/home" component={Home} />
-                <Route exact path="/job" component={Job} />
+                <Route exact path="/about" component={About} />
+                <Route exact path="/new-job" component={Job} />
             </Switch>
         </AppContext.Provider>
     );
