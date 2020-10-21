@@ -1,6 +1,6 @@
 import React , { useEffect } from 'react';
 
-import Navbar from '../components/navbar-lp';
+import Navbar from '../components/navbar-home';
 
 export default function LandingPage() {
     useEffect(() => {
@@ -10,7 +10,7 @@ export default function LandingPage() {
     return (
         <div>
             <Navbar />
-            WELCOME
+            NEW JOB
         </div>
     )
 }
