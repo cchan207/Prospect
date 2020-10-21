@@ -21,6 +21,7 @@ export default function LandingPage() {
                     <Container className="login-bg">
                         <div className="login-content">
                             <h1><img src={FullLogo}/></h1>
+                            <h3>Create Account</h3>
                             <Form className="login-form">
                             <Form.Group controlId="formBasicEmail">
                                 <Form.Label>Email address</Form.Label>
