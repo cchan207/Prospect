@@ -1,11 +1,12 @@
 import React , { useEffect } from 'react';
-
 import '../css-files/app.css';
 
 import Navbar from '../components/navbar';
 import Container from '@material-ui/core/Container';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import LoginButton from '../components/loginButton';
+
 
 export default function LandingPage() {
     useEffect(() => {
@@ -31,9 +32,7 @@ export default function LandingPage() {
                                 <Form.Control type="password" placeholder="Password" />
                             </Form.Group>
                             </Form>
-                            <Button variant="secondary" type="submit">
-                                Log In
-                            </Button>
+                            <LoginButton/>
                             <p>
                                 Don't have an account? Sign Up
                             </p>
