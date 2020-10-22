@@ -8,6 +8,7 @@ db_name = os.environ.get('CLOUD_SQL_DATABASE_NAME')
 db_connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
 
 def open_connection():
+    conn = None
     unix_socket = '/cloudsql/{}'.format(db_connection_name)
     try:
         if os.environ.get('GAE_ENV') == 'standard':
