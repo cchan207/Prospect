@@ -57,3 +57,10 @@
 .login-form label {
     margin-left: 2.5%;
 }
+
+/* Navbar */
+
+.navbar {
+    background-color: #14274e;
+    font-family: 'Lato', sans-serif;
+}
