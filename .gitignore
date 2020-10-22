@@ -3,3 +3,7 @@
 
 # vscode files
 .vscode
+
+# cloud
+app.yaml
+.gcloudignore
