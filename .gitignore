@@ -6,4 +6,5 @@
 
 # cloud
 app.yaml
+api.yaml
 .gcloudignore
