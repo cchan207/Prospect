@@ -8,6 +8,7 @@ app.yaml
 /node_modules
 /.pnp
 .pnp.js
+../prospect-api/env/
 
 # testing
 /coverage
