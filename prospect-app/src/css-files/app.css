@@ -1,12 +1,17 @@
-* h1 {
-    font-size: 50px;
-}
-
 .login {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; 
+    height: 100vh;
+}
+
+.login h1 {
+    font-size: 50px;
+}
+
+.login img {
+    height: auto;
+    width: 200px;
 }
 
 .login-bg {
@@ -14,23 +19,31 @@
     background: #F5F5F5;
     border-radius: 30px;
     min-height: 80vh;
+    max-height: 80vh;
     justify-content: center;
     align-content: center;
 }
 
 .login-content {
+    position: relative;
     width: 500px;
     text-align: center;
-    padding-top: 20%;
+    padding-top: 12%;
+    height: 80vh;
 }
 
-.login-content p {
-    margin-top: 45%;
-    padding-bottom: 5%;
+.login-content span {
+    text-align: center;
+    position: absolute;
+    bottom: 0;
+}
+
+.login a {
+    color: #394867;
 }
 
 .login-form {
-    padding-top: 30%;
+    padding-top: 10%;
     text-align: left;
 }
 
