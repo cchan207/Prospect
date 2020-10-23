@@ -1,5 +1,6 @@
 # python virtual env
 /prospect-api/env
+__pycache__/
 
 # vscode files
 .vscode

@@ -26,48 +26,54 @@ class User(db.Model):
 	LastName = db.Column(db.String(50), nullable = False)
 	Email = db.Column(db.String(50), nullable = False, unique = True)
 
-# @app.route('/add', methods =['POST'])
-# def add():
-# 	# geting name and email
-# 	name = request.form.get('name')
-# 	email = request.form.get('email')
+@app.route('/add', methods =['POST'])
+def add():
+	# geting name and email
+	firstName = request.form.get('FirstName')
+	lastName = request.form.get('LastName')
+	email = request.form.get('Email')
 
-# 	# checking if user already exists
-# 	user = Users.query.filter_by(email = email).first()
+	# get id
+	userId = db.session.query(db.func.max(User.UserId)).first()[0] + 1
 
-# 	if not user:
-# 		try:
-# 			# creating Users object
-# 			user = Users(
-# 				name = name,
-# 				email = email
-# 			)
-# 			# adding the fields to users table
-# 			db.session.add(user)
-# 			db.session.commit()
-# 			# response
-# 			responseObject = {
-# 				'status' : 'success',
-# 				'message': 'Sucessfully registered.'
-# 			}
+	# checking if user already exists
+	user = User.query.filter_by(Email = email).first()
 
-# 			return make_response(responseObject, 200)
-# 		except:
-# 			responseObject = {
-# 				'status' : 'fail',
-# 				'message': 'Some error occured !!'
-# 			}
+	if not user:
+		try:
+			# creating Users object
+			user = User(
+				UserId = userId,
+				FirstName = firstName,
+				LastName = lastName,
+				Email = email
+			)
+			# adding the fields to users table
+			db.session.add(user)
+			db.session.commit()
+			# response
+			responseObject = {
+				'status' : 'success',
+				'message': 'Sucessfully registered.'
+			}
 
-# 			return make_response(responseObject, 400)
+			return make_response(responseObject, 200)
+		except:
+			responseObject = {
+				'status' : 'fail',
+				'message': 'Some error occured !!'
+			}
 
-# 	else:
-# 		# if user already exists then send status as fail
-# 		responseObject = {
-# 			'status' : 'fail',
-# 			'message': 'User already exists !!'
-# 		}
+			return make_response(responseObject, 400)
 
-# 		return make_response(responseObject, 403)
+	else:
+		# if user already exists then send status as fail
+		responseObject = {
+			'status' : 'fail',
+			'message': 'User already exists !!'
+		}
+
+		return make_response(responseObject, 403)
 
 @app.route('/view')
 def view():
