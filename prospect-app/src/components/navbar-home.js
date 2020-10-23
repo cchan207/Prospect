@@ -15,8 +15,8 @@ export default function NavigationBar() {
     const checkAuthJob = () => {
         loginContext.loginState === true ? window.location.href = "#job" : window.location.href = "#";
     }
-    
-    
+
+
     <Nav.Link onClick={loginContext.toggleLogin}>
         {loginContext.loginState === false ? "Log in" : "Log out"}
      </Nav.Link>

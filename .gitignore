@@ -9,3 +9,9 @@ __pycache__/
 app.yaml
 api.yaml
 .gcloudignore
+
+#random
+.DS_Store
+
+#dependencies
+node_modules/

@@ -9,7 +9,7 @@ import AppContext from '../components/context';
 
 import FullLogo from '../img/FullLogo.png';
 
-export default function LandingPage() {
+export default function Login() {
     useEffect(() => {
         window.scrollTo(0, 0)
     }, [])

@@ -30,6 +30,16 @@
     align-content: center;
 }
 
+.addUser-bg {
+  padding-top: 30px;
+  display: flex;
+  border-radius: 30px;
+  min-height: 85vh;
+  max-height: 85vh;
+  justify-content: center;
+  align-content: center;
+}
+
 .login-content {
     font-family: 'Lato', sans-serif;
     position: relative;
