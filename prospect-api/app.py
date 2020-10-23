@@ -13,6 +13,7 @@ PROJECT_ID ="sonic-dialect-290819"
 INSTANCE_NAME ="prospect-instance"
 
 # configuration
+app.config["DEBUG"] = True
 app.config["SECRET_KEY"] = "yoursecretkey"
 app.config["SQLALCHEMY_DATABASE_URI"]= f"mysql+mysqldb://root:{PASSWORD}@{PUBLIC_IP_ADDRESS}/{DBNAME}?unix_socket=/cloudsql/{PROJECT_ID}:{INSTANCE_NAME}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]= True
@@ -26,8 +27,8 @@ class User(db.Model):
 	LastName = db.Column(db.String(50), nullable = False)
 	Email = db.Column(db.String(50), nullable = False, unique = True)
 
-@app.route('/add', methods =['POST'])
-def add():
+@app.route('/api/v1/add/user', methods =['POST'])
+def add_user():
 	# geting name and email
 	firstName = request.form.get('FirstName')
 	lastName = request.form.get('LastName')
@@ -75,8 +76,8 @@ def add():
 
 		return make_response(responseObject, 403)
 
-@app.route('/view')
-def view():
+@app.route('/api/v1/search/users/all', methods=['GET'])
+def get_all_users():
 	# fetches all the users
 	users = User.query.all()
 	# response list consisting user details
@@ -93,6 +94,29 @@ def view():
 		'message': response
 	}, 200)
 
+@app.route('/api/v1/search/users', methods=['GET'])
+def get_user():
+	id = request.form.get('UserId')
+	# checks for user id in request
+	if id:
+		# retrieve all rows where userid = id
+		users = User.query.filter_by(UserId = id).all()
+		response = list()
+		for user in users:
+			response.append({
+				"name" : user.FirstName + " " + user.LastName,
+				"email" : user.Email
+			})
+			return make_response({
+				'status' : 'success',
+				'message': response
+			}, 200)
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'UserId not provided !!'
+		}
+		return make_response(responseObject, 400)
 
 if __name__ == "__main__":
 	# serving the app directly
