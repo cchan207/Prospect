@@ -2,7 +2,7 @@ import React , { useEffect, useState } from 'react';
 import '../css-files/app.css';
 import axios from 'axios';
 
-import Navbar from '../components/navbar-home';
+import Navbar from '../components/navbar-lp';
 
 function DefaultHome() {
     useEffect(() => {

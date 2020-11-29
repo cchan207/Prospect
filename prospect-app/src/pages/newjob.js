@@ -8,7 +8,7 @@ import Button from 'react-bootstrap/Button';
 import LoginButton from '../components/loginButton';
 import AppContext from '../components/context';
 
-import Navbar from '../components/navbar-home';
+import Navbar from '../components/navbar-lp';
 
 export default function LandingPage() {
     const [firstName, setFirstName] = useState('');
