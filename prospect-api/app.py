@@ -51,6 +51,7 @@ class City(db.Model):
 class Company(db.Model):
 	CompanyId = db.Column(db.Integer, primary_key = True, nullable = False)
 	CompanyName = db.Column(db.String(50), nullable = False)
+	CompanyWebsite = db.Column(db.String(100), nullable = True)
 
 class Recruiter(db.Model):
 	RecId = db.Column(db.Integer, primary_key = True, nullable = False)
@@ -63,6 +64,157 @@ class Recruiter(db.Model):
 class State(db.Model):
 	StateId = db.Column(db.Integer, primary_key = True, nullable = False)
 	StateName = db.Column(db.String(50), nullable = False)
+
+# Takes in stateId, returns state associated with stateId
+@app.route('/api/v1/search/states', methods = ['GET'])
+def get_state():
+	# get stateId
+	stateId = request.form.get('StateId')
+
+	state = State.query.filter_by(StateId = stateId).first()
+
+	if state:
+		response = list()
+		response.append({
+			"stateName" : state.StateName
+		})
+
+		return make_response({
+				'status' : 'success',
+				'message' : response
+			}, 200)
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'State does not exist !!'
+		}
+		return make_response(responseObject, 400)
+
+# Takes in cityName, adds to city table
+@app.route('/api/v1/add/cities', methods = ['POST'])
+def add_city():
+	# get city details
+	cityName = request.form.get('CityName')
+
+	# get id
+	cityId = db.session.query(db.func.max(City.CityId)).first()[0] + 1
+
+	try:
+		# create company object
+		city = City (
+			CityId = cityId,
+			CityName = cityName
+		)
+		db.session.add(city)
+		db.session.commit()
+		# response
+		responseObject = {
+			'status' : 'success',
+			'message': 'Sucessfully registered.'
+		}
+
+		return make_response(responseObject, 200)
+	except:
+		return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			}, 400)
+
+# Takes in cityId, returns city associated with cityId
+@app.route('/api/v1/search/cities', methods = ['GET'])
+def get_city():
+	# get cityId
+	cityId = request.form.get('CityId')
+
+	city = City.query.filter_by(CityId = cityId).first()
+
+	if app:
+		response = list()
+		response.append({
+			"cityName" : city.CityName
+		})
+
+		return make_response({
+				'status' : 'success',
+				'message' : response
+			}, 200)
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'City does not exist !!'
+		}
+		return make_response(responseObject, 400)
+
+# Takes in companyName, companyWebsite and adds to company table
+# companyName required, companyWebsite nullalbe
+@app.route('/api/v1/add/companies', methods = ['POST'])
+def add_company():
+	# get company details
+	compName = request.form.get('CompanyName')
+	compWebsite = request.form.get('CompanyWebsite')
+
+	# get id
+	compId = db.session.query(db.func.max(Company.CompanyId)).first()[0] + 1
+
+	try:
+
+		# create company object
+		comp = Company (
+			CompanyId = compId,
+			CompanyName = compName,
+			CompanyWebsite = compWebsite
+		)
+		db.session.add(comp)
+		db.session.commit()
+		# response
+		responseObject = {
+			'status' : 'success',
+			'message': 'Sucessfully registered.'
+		}
+
+		return make_response(responseObject, 200)
+	except:
+		return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			}, 400)
+
+
+# Takes in companyId, returns company associated with this companyId
+@app.route('/api/v1/search/companies', methods = ['GET'])
+def get_company():
+	# get companyId to find associated company
+	compId = request.form.get('CompanyId')
+
+	comp = Company.query.filter_by(CompanyId = compId).first()
+
+	if comp:
+		response = list()
+		response.append({
+			"companyName" : comp.CompanyName,
+			"companyWebsite" : comp.CompanyWebsite
+		})
+		return make_response({
+				'status' : 'success',
+				'message' : response
+			}, 200)
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'Company does not exist !!'
+		}
+		return make_response(responseObject, 400)
+
+# TODO
+@app.route('/api/v1/update/applications', methods = ['POST', 'DELETE'])
+def delete_application():
+	return
+
+# TODO
+@app.route('/api/v1/update/applications', methods = ['POST', 'PUT'])
+def update_application():
+	return
+
 
 # Takes in applicationId, returns application associated with this applicationId
 @app.route('/api/v1/search/applications', methods = ['GET'])
