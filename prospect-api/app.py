@@ -2,7 +2,7 @@
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
-from datetime import datetime
+import time
 
 # initializing Flask app
 app = Flask(__name__)
@@ -37,7 +37,7 @@ class Application(db.Model):
 	PositionTitle = db.Column(db.String(50), nullable = False)
 	ApplicationLink = db.Column(db.String(100), nullable = True)
 	ApplicationStatus = db.Column(db.String(50), nullable = False, default="PENDING")
-	ApplicationDate = db.Column(db.DateTime, nullable = False, default=datetime.utcnow)
+	ApplicationDate = db.Column(db.DateTime, nullable = False, default=time.strftime(r"%Y-%m-%d", time.localtime()))
 
 class ApplicationLocation(db.Model):
 	ApplicationId = db.Column(db.Integer, primary_key = True, nullable = False)
@@ -64,8 +64,50 @@ class State(db.Model):
 	StateId = db.Column(db.Integer, primary_key = True, nullable = False)
 	StateName = db.Column(db.String(50), nullable = False)
 
+# Takes in UserId (can be found using search users api), returns all applicatons associate with this UserId
+@app.route('/api/v1/search/applications', methods = ['GET'])
+def get_applications():
+	# get userid to find all associated applications
+	userId = request.form.get('UserId')
+
+	user = User.query.filter_by(UserId = userId).first()
+	
+	if user:
+		try:
+			applications = Application.query.filter_by(UserId = userId).all()
+			response = list()
+
+			for app in applications:
+				response.append({
+					"appId" : app.ApplicationId,
+					"companyId" : app.CompanyId,
+					"positionTitle" : app.PositionTitle,
+					"appLink" : app.ApplicationLink,
+					"appStatus" : app.ApplicationStatus,
+					"appDate" : app.ApplicationDate # potentially have to fix date formatting
+				})
+
+			return make_response({
+				'status' : 'success',
+				'message' : response
+			}, 200)
+		except:
+			return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			}, 400)
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'UserId does not exist !!'
+		}
+		return make_response(responseObject, 400)
+
+# Takes in UserId (can be found using search users api), CompanyId, PositionTitle, ApplicationLink, ApplicationStatus, and ApplicationDate
+# UserId, CompanyId, PositionTitle required, ApplicationLink can be NULL, ApplicationStatus will be default PENDING, ApplicationDate will be default now in utc
+# Note: Make sure CompanyId exists, if not create a new company app side
 @app.route('/api/v1/add/applications', methods = ['POST'])
-def add_application():
+def add_applications():
 	# geting name and email
 	userId = request.form.get('UserId')
 	companyId = request.form.get('CompanyId')
@@ -124,7 +166,7 @@ def add_application():
 				'message': 'User does not exist !!'
 			}
 
-# takes in first name, last name, and email to add to Users table
+# Takes in first name, last name, and email to add to Users table
 @app.route('/api/v1/add/user', methods =['POST'])
 def add_user():
 	# geting name and email
@@ -174,7 +216,7 @@ def add_user():
 
 		return make_response(responseObject, 403)
 
-# takes in no parameters, returns all users
+# Takes in no parameters, returns all users
 @app.route('/api/v1/search/users/all', methods=['GET'])
 def get_all_users():
 	# fetches all the users
@@ -194,7 +236,7 @@ def get_all_users():
 		'message': response
 	}, 200)
 
-# takes in email as key, returns user information
+# Takes in email as key, returns user information
 @app.route('/api/v1/search/users', methods=['GET'])
 def get_user():
 	email = request.form.get('Email')
