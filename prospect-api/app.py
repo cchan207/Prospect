@@ -64,8 +64,38 @@ class State(db.Model):
 	StateId = db.Column(db.Integer, primary_key = True, nullable = False)
 	StateName = db.Column(db.String(50), nullable = False)
 
-# Takes in UserId (can be found using search users api), returns all applicatons associate with this UserId
+# Takes in applicationId, returns application associated with this applicationId
 @app.route('/api/v1/search/applications', methods = ['GET'])
+def get_application():
+	# get applicationId to find associated application
+	appId = request.form.get('ApplicationId')
+
+	app = Application.query.filter_by(ApplicationId = appId).first()
+
+	if app:
+		response = list()
+		response.append({
+			"userId" : app.UserId,
+			"companyId" : app.CompanyId,
+			"positionTitle" : app.PositionTitle,
+			"appLink" : app.ApplicationLink,
+			"appStatus" : app.ApplicationStatus,
+			"appDate" : app.ApplicationDate # TODO: potentially have to fix date formatting
+		})
+
+		return make_response({
+				'status' : 'success',
+				'message' : response
+			}, 200)
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'Application does not exist !!'
+		}
+		return make_response(responseObject, 400)
+
+# Takes in UserId (can be found using search users api), returns all applicatons associated with this UserId
+@app.route('/api/v1/search/applications/all', methods = ['GET'])
 def get_applications():
 	# get userid to find all associated applications
 	userId = request.form.get('UserId')
@@ -84,7 +114,7 @@ def get_applications():
 					"positionTitle" : app.PositionTitle,
 					"appLink" : app.ApplicationLink,
 					"appStatus" : app.ApplicationStatus,
-					"appDate" : app.ApplicationDate # potentially have to fix date formatting
+					"appDate" : app.ApplicationDate # TODO: potentially have to fix date formatting
 				})
 
 			return make_response({
