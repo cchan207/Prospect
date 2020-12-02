@@ -13,7 +13,7 @@ import {
   import Login from './pages/login';
   import SignUp from './pages/signup';
   import LandingPage from './pages/landingpage';
-  import DefaultHome, { Home }  from './pages/job';
+  import Home from './pages/job';
   import About from './pages/about';
   import Job from './pages/newjob';
 
