@@ -40,7 +40,7 @@ class Application(db.Model):
 	ApplicationStatus = db.Column(db.String(50), nullable = False, default="PENDING")
 	ApplicationDate = db.Column(db.DateTime, nullable = False, default=time.strftime(r"%Y-%m-%d", time.localtime()))
 
-class ApplicationLocation(db.Model):
+class Applicationlocation(db.Model):
 	ApplicationId = db.Column(db.Integer, primary_key = True, nullable = False)
 	CityId = db.Column(db.Integer, nullable = False)
 	StateId = db.Column(db.Integer, nullable = False)
@@ -65,6 +65,51 @@ class Recruiter(db.Model):
 class State(db.Model):
 	StateId = db.Column(db.Integer, primary_key = True, nullable = False)
 	StateName = db.Column(db.String(50), nullable = False)
+
+@app.route('/api/v1/search/locations', methods = ['GET'])
+def get_locations():
+	# get application id
+	appId = request.form.get('ApplicationId')
+
+	appLocation = Applicationlocation.query.filter_by(ApplicationId = appId).first()
+
+	connection = engine.connect()
+	if appLocation:
+		try:
+			response = list()
+
+			city_name_query = text(
+				'SELECT CityName FROM city WHERE CityId = :c_id;'
+			)
+			state_name_query = text(
+				'SELECT StateName FROM state WHERE StateId = :s_id;'
+			)
+
+			city = engine.execute(city_name_query, c_id = appLocation.CityId).fetchone()
+			state = engine.execute(state_name_query, s_id = appLocation.StateId).fetchone()
+
+			response.append({
+				"cityName" : city[0],
+				"stateName" : state[0]
+			})
+
+			return make_response({
+					'status' : 'success',
+					'message' : response
+				}, 200)
+		except:
+			return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			}, 400)	
+		finally:
+			connection.close()
+	else:
+		responseObject = {
+				'status' : 'failed',
+				'message': 'Application does not exist !!'
+		}
+		return make_response(responseObject, 400)
 
 # Takes in companyId, recFirstName, recLastName, recEmail, recPhone
 # companyId, firstName and lastName is required, the others are nullable
@@ -147,6 +192,8 @@ def delete_recruiter():
 				'status' : 'failed',
 				'message' : 'Some error occured !!'
 			}, 400)	
+		finally:
+			connection.close()
 	else:
 		responseObject = {
 				'status' : 'fail',
@@ -376,6 +423,8 @@ def update_application():
 				'status' : 'failed',
 				'message' : 'Some error occured !!'
 			}, 400)
+		finally:
+			connection.close()
 	else:
 		responseObject = {
 				'status' : 'fail',
@@ -522,6 +571,7 @@ def add_applications():
 				'status' : 'fail',
 				'message': 'User does not exist !!'
 			}
+		return responseObject
 
 # Takes in first name, last name, and email to add to Users table
 @app.route('/api/v1/add/user', methods =['POST'])
