@@ -1,7 +1,8 @@
 # imports
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+# from sqlalchemy.sql import text
 import time
 
 # initializing Flask app
@@ -59,11 +60,126 @@ class Recruiter(db.Model):
 	RecEmail = db.Column(db.String(50), nullable = True)
 	RecFirstName = db.Column(db.String(50), nullable = False)
 	RecLastName = db.Column(db.String(50), nullable = False)
-	RecPhone = db.Column(db.String(50), nullable = False)
+	RecPhone = db.Column(db.String(50), nullable = True)
 
 class State(db.Model):
 	StateId = db.Column(db.Integer, primary_key = True, nullable = False)
 	StateName = db.Column(db.String(50), nullable = False)
+
+# Takes in companyId, recFirstName, recLastName, recEmail, recPhone
+# companyId, firstName and lastName is required, the others are nullable
+@app.route('/api/v1/add/recruiters', methods = ['POST'])
+def add_recruiter():
+	# get recruiter info
+	compId = request.form.get('CompanyId')
+	recEmail = request.form.get('RecEmail')
+	recFirstName = request.form.get('RecFirstName')
+	recLastName = request.form.get('RecLastName')
+	recPhone = request.form.get('RecPhone')
+
+	if compId and recFirstName and recLastName:
+		try:
+			# get unique recruiter id
+			recruiters = engine.execute('SELECT * FROM recruiter;')
+			recId = 1
+			for rec in recruiters:
+				if (rec.RecId - recId == 0):
+					recId = recId + 1
+				else:
+					break
+
+			# make Recruiter object
+			recruiter = Recruiter(
+				RecId = recId,
+				CompanyId = compId,
+				RecEmail = recEmail,
+				RecFirstName = recFirstName,
+				RecLastName = recLastName,
+				RecPhone = recPhone
+			)
+			# add to applicaton table
+			db.session.add(recruiter)
+			db.session.commit()
+
+			# response
+			responseObject = {
+				'status' : 'success',
+				'message': 'Sucessfully registered.'
+			}
+			return make_response(responseObject, 200)
+		except:
+			return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			})
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'Missing recruiter fields !!'
+		}
+		return make_response(responseObject, 400)
+
+
+# Takes in recId, deletes recruiter associated with recId
+@app.route('/api/v1/delete/recruiters', methods = ['POST', 'DELETE'])
+def delete_recruiter():
+	# get recId
+	recId = request.form.get('RecId')
+
+	recruiter = Recruiter.query.filter_by(RecId = recId).first()
+
+	connection = engine.connect()
+	if recruiter:
+		try:
+			delete_query = text(
+				'DELTE FROM recruiter WHERE RecId = :r_id;'
+			)
+			engine.execute(delete_query, r_id = recId)
+
+			# response
+			responseObject = {
+				'status' : 'success',
+				'message' : 'Sucessfully updated.'
+			}
+			return make_response(responseObject, 200)
+		except:
+			return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			}, 400)	
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'Recruiter does not exist !!'
+		}
+		return make_response(responseObject, 400)
+
+# Takes in recId, returns recruiter associated with recId
+@app.route('/api/v1/search/recruiters', methods = ['GET'])
+def get_recruiter():
+	# get recId
+	recId = request.form.get('RecId')
+
+	recruiter = Recruiter.query.filter_by(RecId = recId).first()
+
+	if recruiter:
+		response = list()
+		response.append({
+			"companyId" : recruiter.CompanyId,
+			"recEmail" : recruiter.RecEmail,
+			"recName" : recruiter.RecFirstName + " " + recruiter.RecLastName,
+			"recPhone" : recruiter.RecPhone
+		})
+		return make_response({
+				'status' : 'success',
+				'message' : response
+			}, 200)
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'Recruiter does not exist !!'
+		}
+		return make_response(responseObject, 400)
 
 # Takes in stateId, returns state associated with stateId
 @app.route('/api/v1/search/states', methods = ['GET'])
@@ -205,14 +321,73 @@ def get_company():
 		}
 		return make_response(responseObject, 400)
 
-# TODO
+# Takes in applicationId, companyId, positionTitle, applicationLink, applicationStatus, and applicationDate
+# ApplicationId is required
+# Modifies application associated with applicationId
+# NOTE: Ensure that company exists, insert into table if not app side
 @app.route('/api/v1/update/applications', methods = ['POST', 'DELETE'])
-def delete_application():
+def update_application():
+	appId = request.form.get('ApplicationId')
+	compId = request.form.get('CompanyId')
+	positionTitle = request.form.get('PositionTitle')
+	appLink = request.form.get('ApplicationLink')
+	appStatus = request.form.get('ApplicationStatus')
+	appDate = request.form.get('ApplicationDate')
+
+	app = Application.query.filter_by(ApplicationId = appId).first()
+
+	connection = engine.connect()
+	if app:
+		try:
+			if compId != None:
+				update_query = text(
+					'UPDATE application SET CompanyId = :c_id WHERE ApplicationId = :a_id;'
+				)
+				engine.execute(update_query, c_id = compId, a_id = appId)
+			if positionTitle != None:
+				update_query = text(
+					'UPDATE application SET PositionTitle = :pos_tit WHERE ApplicationId = :a_id;'
+				)
+				engine.execute(update_query, pos_tit = positionTitle, a_id = appId)
+			if appLink != None:
+				update_query = text(
+					'UPDATE application SET ApplicationLink = :a_link WHERE ApplicationId = :a_id;'
+				)
+				engine.execute(update_query, a_link = appLink, a_id = appId)
+			if appStatus != None:
+				update_query = text(
+					'UPDATE application SET ApplicationStatus = :a_stat WHERE ApplicationId = :a_id;'
+				)
+				engine.execute(update_query, a_stat = appStatus, a_id = appId)
+			if appDate != None:
+				update_query = text(
+					'UPDATE application SET ApplicationDate = :a_date WHERE ApplicationId = :a_id;'
+				)
+				engine.execute(update_query, a_date = appDate, a_id = appId)
+
+			# response
+			responseObject = {
+				'status' : 'success',
+				'message' : 'Sucessfully updated.'
+			}
+			return make_response(responseObject, 200)
+		except:
+			return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			}, 400)
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'Application does not exist !!'
+		}
+		return make_response(responseObject, 400)
+
 	return
 
 # TODO
-@app.route('/api/v1/update/applications', methods = ['POST', 'PUT'])
-def update_application():
+@app.route('/api/v1/delete/applications', methods = ['POST', 'PUT'])
+def delete_application():
 	return
 
 
