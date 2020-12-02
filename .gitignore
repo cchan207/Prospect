@@ -10,7 +10,7 @@ app.yaml
 api.yaml
 .gcloudignore
 
-#random
+#misc
 .DS_Store
 
 #dependencies
