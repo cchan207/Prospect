@@ -156,7 +156,7 @@ def get_locations():
 			return make_response({
 				'status' : 'failed',
 				'message' : 'Some error occured !!'
-			}, 400)	
+			}, 400)
 		finally:
 			connection.close()
 	else:
@@ -246,7 +246,7 @@ def delete_recruiter():
 			return make_response({
 				'status' : 'failed',
 				'message' : 'Some error occured !!'
-			}, 400)	
+			}, 400)
 		finally:
 			connection.close()
 	else:
@@ -265,9 +265,11 @@ def get_recruiter():
 	recruiter = Recruiter.query.filter_by(RecId = recId).first()
 
 	if recruiter:
+		company = Company.query.filter_by(CompanyId = recruiter.CompanyId).first()
 		response = list()
 		response.append({
-			"companyId" : recruiter.CompanyId, # TODO: return company name AND company id
+			"companyId" : recruiter.CompanyId,
+			"companyName" : company.CompanyName,
 			"recEmail" : recruiter.RecEmail,
 			"recName" : recruiter.RecFirstName + " " + recruiter.RecLastName,
 			"recPhone" : recruiter.RecPhone
@@ -532,10 +534,13 @@ def get_application():
 	app = Application.query.filter_by(ApplicationId = appId).first()
 
 	if app:
+		company = Company.query.filter_by(CompanyId = app.CompanyId).first()
+
 		response = list()
 		response.append({
 			"userId" : app.UserId,
-			"companyId" : app.CompanyId, # TODO: return company name
+			"companyId" : app.CompanyId,
+			"companyName" : company.companyName,
 			"positionTitle" : app.PositionTitle,
 			"appLink" : app.ApplicationLink,
 			"appStatus" : app.ApplicationStatus,
@@ -560,16 +565,18 @@ def get_applications():
 	userId = request.form.get('UserId')
 
 	user = User.query.filter_by(UserId = userId).first()
-	
+
 	if user:
 		try:
 			applications = Application.query.filter_by(UserId = userId).all()
 			response = list()
 
 			for app in applications:
+				company = Company.query.filter_by(CompanyId = app.CompanyId).first()
 				response.append({
 					"appId" : app.ApplicationId,
-					"companyId" : app.CompanyId, # TODO: return company name
+					"companyId" : app.CompanyId,
+					"companyName" : company.CompanyName,
 					"positionTitle" : app.PositionTitle,
 					"appLink" : app.ApplicationLink,
 					"appStatus" : app.ApplicationStatus,
