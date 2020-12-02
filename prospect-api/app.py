@@ -427,7 +427,7 @@ def get_company():
 # ApplicationId is required
 # Modifies application associated with applicationId
 # NOTE: Ensure that company exists, insert into table if not app side
-@app.route('/api/v1/update/applications', methods = ['POST', 'DELETE'])
+@app.route('/api/v1/update/applications', methods = ['POST', 'PUT'])
 def update_application():
 	appId = request.form.get('ApplicationId')
 	compId = request.form.get('CompanyId')
@@ -487,12 +487,40 @@ def update_application():
 		}
 		return make_response(responseObject, 400)
 
-	return
-
-# TODO
-@app.route('/api/v1/delete/applications', methods = ['POST', 'PUT'])
+@app.route('/api/v1/delete/applications', methods = ['POST', 'DELETE'])
 def delete_application():
-	return
+	# get applicationId to find associate application
+	appId = request.form.get('ApplicationId')
+
+	app = Application.query.filter_by(ApplicationId = appId).first()
+
+	connection = engine.connect()
+	if app:
+		try:
+			application_delete_query = text(
+				'DELETE FROM application WHERE ApplicationId = :a_id;'
+			)
+			engine.execute(application_delete_query, a_id = app.ApplicationId)
+
+			# response
+			responseObject = {
+				'status' : 'success',
+				'message' : 'Sucessfully deleted.'
+			}
+			return make_response(responseObject, 200)
+		except:
+			return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			}, 400)
+		finally:
+			connection.close()
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'Application does not exist !!'
+		}
+		return make_response(responseObject, 400)
 
 
 # Takes in applicationId, returns application associated with this applicationId
