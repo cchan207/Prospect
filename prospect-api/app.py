@@ -89,7 +89,9 @@ def get_locations():
 			state = engine.execute(state_name_query, s_id = appLocation.StateId).fetchone()
 
 			response.append({
+				"cityId" : appLocation.CityId,
 				"cityName" : city[0],
+				"stateId" : appLocation.StateId,
 				"stateName" : state[0]
 			})
 
@@ -212,7 +214,7 @@ def get_recruiter():
 	if recruiter:
 		response = list()
 		response.append({
-			"companyId" : recruiter.CompanyId,
+			"companyId" : recruiter.CompanyId, # TODO: return company name AND company id
 			"recEmail" : recruiter.RecEmail,
 			"recName" : recruiter.RecFirstName + " " + recruiter.RecLastName,
 			"recPhone" : recruiter.RecPhone
@@ -452,7 +454,7 @@ def get_application():
 		response = list()
 		response.append({
 			"userId" : app.UserId,
-			"companyId" : app.CompanyId,
+			"companyId" : app.CompanyId, # TODO: return company name
 			"positionTitle" : app.PositionTitle,
 			"appLink" : app.ApplicationLink,
 			"appStatus" : app.ApplicationStatus,
@@ -486,7 +488,7 @@ def get_applications():
 			for app in applications:
 				response.append({
 					"appId" : app.ApplicationId,
-					"companyId" : app.CompanyId,
+					"companyId" : app.CompanyId, # TODO: return company name
 					"positionTitle" : app.PositionTitle,
 					"appLink" : app.ApplicationLink,
 					"appStatus" : app.ApplicationStatus,
