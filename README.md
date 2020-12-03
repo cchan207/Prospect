@@ -4,7 +4,7 @@
 python api.py db init       \
 python api.py db migrate    \
 python api.py db upgrade    \
-python api.py db --help     \
+python api.py db --help
 
 https://flask-migrate.readthedocs.io/en/latest/
 
