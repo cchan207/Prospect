@@ -52,7 +52,7 @@ ReactDOM.render(
         <Auth0Provider
             domain="prospect-jobs.us.auth0.com"
             clientId="rFKAUuhFOosR4gMNkekfsActq1slvs0g"
-            redirectUri={window.location.origin}
+            redirectUri={'http://localhost:3000/home'}
         >
         <App />
       </Auth0Provider>
