@@ -2,7 +2,7 @@
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, text
-# from sqlalchemy.sql import text
+from flask_migrate import Migrate
 import time
 
 # initializing Flask app
@@ -22,6 +22,7 @@ app.config["SQLALCHEMY_DATABASE_URI"]= f"mysql+mysqldb://root:{PASSWORD}@{PUBLIC
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]= True
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 engine = create_engine(f"mysql+mysqldb://root:{PASSWORD}@{PUBLIC_IP_ADDRESS}/{DBNAME}?unix_socket=/cloudsql/{PROJECT_ID}:{INSTANCE_NAME}", convert_unicode=True)
 
 # ORMs for SQLAlchemy
@@ -65,6 +66,7 @@ class Recruiter(db.Model):
 class State(db.Model):
 	StateId = db.Column(db.Integer, primary_key = True, nullable = False)
 	StateName = db.Column(db.String(50), nullable = False)
+	StateAbbr = db.Column(db.String(2), nullable = False)
 
 # Takes an application id, city name, and state name, adds location to applicationlocation
 # Can call this multiple times for applications with multiple locations
