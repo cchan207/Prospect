@@ -531,6 +531,8 @@ def delete_application():
 @app.route('/api/v1/search/applications', methods = ['GET'])
 def get_application():
 	# get applicationId to find associated application
+
+	#appId = 1; #isabel addition - still trying to get the parameters to send through correctly
 	appId = request.form.get('ApplicationId')
 
 	app = Application.query.filter_by(ApplicationId = appId).first()
@@ -542,7 +544,7 @@ def get_application():
 		response.append({
 			"userId" : app.UserId,
 			"companyId" : app.CompanyId,
-			"companyName" : company.companyName,
+			"companyName" : company.CompanyName,
 			"positionTitle" : app.PositionTitle,
 			"appLink" : app.ApplicationLink,
 			"appStatus" : app.ApplicationStatus,

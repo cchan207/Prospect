@@ -16,6 +16,7 @@ import {
   import Home from './pages/job';
   import About from './pages/about';
   import Job from './pages/newjob';
+  import Edit from './pages/editjob';
 
 function App() {
     const [login, setLogin] = useState(false); // not logged in initially
@@ -40,6 +41,7 @@ function App() {
                 <Route exact path="/home" component={Home} />
                 <Route exact path="/about" component={About} />
                 <Route exact path="/add-job" component={Job} />
+                <Route exact path="/edit-job" component={Edit} />
               </div>
             </BrowserRouter>
             </Switch>

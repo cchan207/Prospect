@@ -37,7 +37,108 @@
   min-height: 85vh;
   max-height: 85vh;
   justify-content: center;
-  align-content: center;
+  align-content: right;
+}
+
+.editRows {
+  border-style: solid;
+}
+
+.editJobButtons {
+  padding-top:5%;
+  padding-left:2%;
+}
+
+.editJob {
+  width:100px;
+  background-color:#3399ff;
+  border-color:#3399ff;
+}
+
+.editJob:hover {
+  background-color:#0068d0;
+  border-color:#0068d0;
+}
+
+.editJob:focus {
+  background-color:#3399ff;
+  border-color:#3399ff;
+  box-shadow:none !important;
+
+}
+
+.editJob:active {
+  background: #0054a9 !important;
+  border-color:#0054a9;
+  box-shadow:none !important;
+}
+
+.updateDatabase {
+  width:100px;
+  background-color:#00b75c;
+  border-color:#00b75c;
+}
+
+.updateDatabase:hover {
+  background-color:#009249;
+  border-color:#009249;
+}
+
+.updateDatabase:focus {
+  background-color:#00b75c;
+  border-color:#00b75c;
+  box-shadow:none !important;
+}
+
+.updateDatabase:active {
+  background: #006633 !important;
+  border-color:#006633;
+  box-shadow:none !important;
+}
+
+.deleteJob {
+  width:100px;
+  background-color:#ff3333;
+  border-color:#ff3333;
+}
+
+.deleteJob:hover {
+   background-color: #d00000;
+   border-color:#d00000;
+}
+
+.deleteJob:focus {
+  background-color:#ff3333;
+  border-color:#ff3333;
+  box-shadow:none !important;
+}
+
+.deleteJob:active {
+  background: #a90000 !important;
+  border-color:#a90000;
+  box-shadow:none !important;
+}
+
+.editPage {
+  display:flex;
+  flex-direction:row;
+}
+
+.editText {
+  padding-left: 1%;
+  position: relative;
+  font-weight: bold;
+}
+
+.editValue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.editjob-bg {
+  padding-top: 5%;
 }
 
 .login-content {
@@ -48,6 +149,7 @@
     padding-top: 20%;
     height: 80vh;
 }
+
 
 .login-content span {
     text-align: center;
