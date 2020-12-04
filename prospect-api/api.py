@@ -124,7 +124,7 @@ def add_locations():
 @app.route('/api/v1/search/locations', methods = ['GET'])
 def get_locations():
 	# get application id
-	appId = request.form.get('ApplicationId')
+	appId = request.args.get('ApplicationId')
 
 	appLocation = Applicationlocation.query.filter_by(ApplicationId = appId).first()
 
@@ -262,7 +262,7 @@ def delete_recruiter():
 @app.route('/api/v1/search/recruiters', methods = ['GET'])
 def get_recruiter():
 	# get recId
-	recId = request.form.get('RecId')
+	recId = request.args.get('RecId')
 
 	recruiter = Recruiter.query.filter_by(RecId = recId).first()
 
@@ -291,7 +291,7 @@ def get_recruiter():
 @app.route('/api/v1/search/states', methods = ['GET'])
 def get_state():
 	# get stateId
-	stateId = request.form.get('StateId')
+	stateId = request.args.get('StateId')
 
 	state = State.query.filter_by(StateId = stateId).first()
 
@@ -346,7 +346,7 @@ def add_city():
 @app.route('/api/v1/search/cities', methods = ['GET'])
 def get_city():
 	# get cityId
-	cityId = request.form.get('CityId')
+	cityId = request.args.get('CityId')
 
 	city = City.query.filter_by(CityId = cityId).first()
 
@@ -406,7 +406,7 @@ def add_company():
 @app.route('/api/v1/search/companies', methods = ['GET'])
 def get_company():
 	# get companyId to find associated company
-	compId = request.form.get('CompanyId')
+	compId = request.args.get('CompanyId')
 
 	comp = Company.query.filter_by(CompanyId = compId).first()
 
@@ -531,7 +531,7 @@ def delete_application():
 @app.route('/api/v1/search/applications', methods = ['GET'])
 def get_application():
 	# get applicationId to find associated application
-	appId = request.form.get('ApplicationId')
+	appId = request.args.get('ApplicationId')
 
 	app = Application.query.filter_by(ApplicationId = appId).first()
 
@@ -542,7 +542,7 @@ def get_application():
 		response.append({
 			"userId" : app.UserId,
 			"companyId" : app.CompanyId,
-			"companyName" : company.companyName,
+			"companyName" : company.CompanyName,
 			"positionTitle" : app.PositionTitle,
 			"appLink" : app.ApplicationLink,
 			"appStatus" : app.ApplicationStatus,
@@ -564,16 +564,25 @@ def get_application():
 @app.route('/api/v1/search/applications/all', methods = ['GET'])
 def get_applications():
 	# get userid to find all associated applications
-	userId = request.form.get('UserId')
+	userId = request.args.get('UserId')
 
 	user = User.query.filter_by(UserId = userId).first()
 
+	connection = engine.connect()
 	if user:
 		try:
 			applications = Application.query.filter_by(UserId = userId).all()
+			application_retrieval_query = text(
+				'SELECT * FROM application JOIN location'
+			)
+			engine.execute(application_delete_query, a_id = app.ApplicationId)
+
+			applications = Application.query.filter_by(UserId = user.UserId).all()
 			response = list()
 
 			for app in applications:
+				
+
 				company = Company.query.filter_by(CompanyId = app.CompanyId).first()
 				response.append({
 					"appId" : app.ApplicationId,
@@ -738,7 +747,7 @@ def get_all_users():
 # Takes in email as key, returns user information
 @app.route('/api/v1/search/users', methods=['GET'])
 def get_user():
-	email = request.form.get('Email')
+	email = request.args.get('Email')
 	# checks for email in request
 	if email:
 		# retrieve all rows where userid = id
