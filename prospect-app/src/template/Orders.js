@@ -7,6 +7,8 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
+import { useAuth0 } from "@auth0/auth0-react";
+
 
 // Generate Order Data
 function createData(id, jobTitle, company, location, date, status) {
@@ -34,7 +36,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Orders() {
+const Orders = () => {
+  const { user, isLoading } = useAuth0();
+  const email = !isLoading && user.email;
+  if (email) {
+    console.log(email);
+  }
+
   const classes = useStyles();
   return (
     <React.Fragment>
@@ -69,3 +77,5 @@ export default function Orders() {
     </React.Fragment>
   );
 }
+
+export default Orders;
