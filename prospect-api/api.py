@@ -72,6 +72,85 @@ class State(db.Model):
     StateName = db.Column(db.String(50), nullable = False)
     StateAbbr = db.Column(db.String(2), nullable = False)
 
+# Takes in applicationId, returns application fields associated with this applicationId
+@app.route('/api/v1/search/applications', methods = ['GET'])
+def get_application():
+	# get applicationId to find associated application
+	appId = request.args.get("applicationId")
+
+	app = Application.query.filter_by(ApplicationId = appId).first()
+
+	connection = engine.connect()
+	if app:
+		try:
+
+			locations_query = text(
+				'SELECT * FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id;'
+			)
+
+			locations = engine.execute(locations_query, a_id = appId)
+
+			response = list()
+			for loc in locations:
+				response.append({
+					"CityName" : loc.CityName,
+					"StateName" : loc.StateName,
+					"StateAbbr" : loc.StateAbbr,
+				})
+
+			application_query = text(
+				'SELECT * FROM company c JOIN application a ON a.CompanyId = c.CompanyId WHERE a.ApplicationId = :a_id;'
+			)
+
+			application = engine.execute(application_query, a_id = appId).fetchone()
+
+			recruiters_query = text(
+				'SELECT * FROM recruiter r JOIN application a ON a.RecId = r.RecId WHERE a.ApplicationId = :a_id;'
+			)
+
+			recruiters = engine.execute(recruiters_query, a_id = appId)
+
+			response2 = list()
+			for rec in recruiters:
+				response2.append({
+					"RecFirstName" : rec.RecFirstName,
+					"RecLastName" : rec.RecLastName,
+					"RecEmail" : rec.RecEmail,
+					"RecPhone" : rec.RecPhone
+				})
+
+			# response
+			responseObject = {
+				'ApplicationId' : application.ApplicationId,
+				'UserId' : application.UserId,
+				'CompanyName':application.CompanyName,
+				'PositionTitle' : application.PositionTitle,
+				'ApplicationStatus' : application.ApplicationStatus,
+				'ApplicationDate' : application.ApplicationDate,
+				'ApplicationLink' : application.ApplicationLink,
+				'Recruiter' : response2,
+				'Locations' : response
+
+			}
+			return make_response(responseObject, 200)
+		except:
+			return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			}, 400)
+		finally:
+			connection.close()
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'Application does not exist !!'
+		}
+		return make_response(responseObject, 400)
+
+# Updates application in application table
+# Parameters: application id, position title, application link, company name, application status,
+# current city name, new city name, new state name
+# If field hasn't changed, send current value
 @app.route('/api/v1/update/applications', methods = ['POST'])
 def update_application():
     appId = request.form.get('id')
@@ -110,33 +189,39 @@ def update_application():
             else:
                 compId = comp.CompanyId
 
-            # get city objects and state id
-            city = session.query(City).filter_by(CityName=appNewCity).first()
-            print("city: ", city)
             oldCity = session.query(City).filter_by(CityName=appOldCity).first()
             print("old city: ", oldCity.CityId)
-            stateId = session.query(State.StateId).filter_by(StateName=appNewState).first()[0]
-            print("state id: ", stateId)
+            oldLocation = session.query(Applicationlocation).filter_by(ApplicationId=appId, CityId=oldCity.CityId).first()
+            print(oldLocation.StateId)
+            newStateId = session.query(State.StateId).filter_by(StateName=appNewState).first()[0]
+            print("state id: ", newStateId)
 
-            # add city if not in city table
-            if city is None:
-                cityId = session.query(func.max(City.CityId)).scalar() + 1
-                print(cityId)
-                city = City(
-                    CityId = cityId,
-                    CityName = appNewCity
-                )
-                session.add(city)
-            else:
-                cityId = city.CityId
+            # only change location if location has changed
+            if oldLocation is not None and (appNewCity != appOldCity or oldLocation.StateId != newStateId):
+                # get city objects and state id
+                newCity = session.query(City).filter_by(CityName=appNewCity).first()
+                print("new city: ", newCity)
 
-            print("app id: ", appId)
-            print("new city: ", cityId)
+                # add city if not in city table
+                if newCity is None:
+                    cityId = session.query(func.max(City.CityId)).scalar() + 1
+                    print(cityId)
+                    city = City(
+                        CityId = cityId,
+                        CityName = appNewCity
+                    )
+                    session.add(city)
+                else:
+                    print("HERE")
+                    cityId = newCity.CityId
+                
+                print("new city id: ", cityId)
 
-             # update old location from application location table
-            oldLocation = session.query(Applicationlocation) \
-                        .filter_by(ApplicationId=appId, CityId=oldCity.CityId) \
-                        .update({"CityId": cityId, "StateId": stateId})
+                # update old location from application location table
+                oldLocation = session.query(Applicationlocation) \
+                            .filter_by(ApplicationId=appId, CityId=oldCity.CityId) \
+                            .update({"CityId": cityId, "StateId": newStateId})
+            print("HERE")
 
             # update application
             application = session.query(Application).filter_by(ApplicationId=appId).update({
@@ -166,6 +251,10 @@ def update_application():
             'message' : 'Application does not exist !!'
         }, 400)
 
+# Adds new application to application table
+# Parameters: user email, position title, application link, company name, application status,
+# city name, full state name
+# Application link and status can be None
 @app.route('/api/v1/add/applications', methods = ['POST'])
 def add_application():
     userEmail = request.form.get('email')
@@ -266,6 +355,8 @@ def add_application():
             'message' : 'User does not exist !!'
         }, 400)
 
+# Deletes application from application table and all associated entries in application location table
+# Parameters: application id
 @app.route('/api/v1/delete/applications', methods = ['POST', 'DELETE'])
 def delete_application():
     # get applicationId to find associate application
