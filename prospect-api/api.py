@@ -1,7 +1,11 @@
 # imports
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
+<<<<<<< HEAD
 from sqlalchemy import create_engine, text, func
+=======
+from sqlalchemy import create_engine, text
+>>>>>>> 74df0d9eece40f55cc4bb5ac9dcf3beaf9dc39ab
 from sqlalchemy.orm import sessionmaker
 from flask_migrate import Migrate
 import time
@@ -26,7 +30,11 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 engine = create_engine(f"mysql+mysqldb://root:{PASSWORD}@{PUBLIC_IP_ADDRESS}/{DBNAME}?unix_socket=/cloudsql/{PROJECT_ID}:{INSTANCE_NAME}", convert_unicode=True)
 
+<<<<<<< HEAD
 # create a Session
+=======
+# Create a session
+>>>>>>> 74df0d9eece40f55cc4bb5ac9dcf3beaf9dc39ab
 Session = sessionmaker(bind=engine, autocommit=False)
 
 # ORMs for SQLAlchemy
@@ -169,6 +177,55 @@ def add_application():
             'status' : 'failed',
             'message' : 'User does not exist !!'
         }, 400)
+
+@app.route('/api/v1/delete/applications', methods = ['POST', 'DELETE'])
+def delete_application():
+	# get applicationId to find associate application
+	appId = request.form.get('ApplicationId')
+
+	try:
+		# create a Session
+		session = Session()
+		session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+		app = session.query(Application).filter_by(ApplicationId = appId).first()
+		print(app.ApplicationId)
+
+		if (app):
+			print("hello1")
+
+			session.delete(app)
+			print("hello2")
+
+			# Delete each entry in Location table associated with Application
+			location = session.query(Applicationlocation).filter_by(ApplicationId = appId).all()
+
+			if len(location) != 0:
+				for l in location:
+					session.delete(l)
+
+			session.commit()
+
+			responseObject = {
+				'status' : 'success',
+				'message' : 'Sucessfully deleted.'
+			}
+			return make_response(responseObject, 200)
+		else:
+			session.rollback()
+			return make_response({
+			'status' : 'failed',
+			'message' : 'Some error occured !!'
+		}, 400)
+	except:
+        # on rollback, the same closure of state
+        # as that of commit proceeds.
+        session.rollback()
+        return make_response({
+            'status' : 'failed',
+            'message' : 'Some error occured !!'
+        }, 400)
+	finally:
+        session.close()
 
 if __name__ == "__main__":
 	# serving the app directly
