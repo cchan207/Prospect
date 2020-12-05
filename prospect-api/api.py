@@ -1,11 +1,7 @@
 # imports
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
-<<<<<<< HEAD
-from sqlalchemy import create_engine, text, func
-=======
 from sqlalchemy import create_engine, text
->>>>>>> 74df0d9eece40f55cc4bb5ac9dcf3beaf9dc39ab
 from sqlalchemy.orm import sessionmaker
 from flask_migrate import Migrate
 import time
@@ -30,11 +26,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 engine = create_engine(f"mysql+mysqldb://root:{PASSWORD}@{PUBLIC_IP_ADDRESS}/{DBNAME}?unix_socket=/cloudsql/{PROJECT_ID}:{INSTANCE_NAME}", convert_unicode=True)
 
-<<<<<<< HEAD
-# create a Session
-=======
 # Create a session
->>>>>>> 74df0d9eece40f55cc4bb5ac9dcf3beaf9dc39ab
 Session = sessionmaker(bind=engine, autocommit=False)
 
 # ORMs for SQLAlchemy
@@ -128,7 +120,7 @@ def add_application():
                 ApplicationStatus = appStatus,
                 ApplicationDate = None
             )
-            
+
             # add application to application table
             session.add(app)
 
