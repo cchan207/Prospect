@@ -44,6 +44,7 @@ class Application(db.Model):
     ApplicationLink = db.Column(db.String(100), nullable = True)
     ApplicationStatus = db.Column(db.String(50), nullable = False, default="PENDING")
     ApplicationDate = db.Column(db.DateTime, nullable = False, default=time.strftime(r"%Y-%m-%d", time.localtime()))
+    RecId = db.Column(db.Integer, nullable = False)
 
 class Applicationlocation(db.Model):
     ApplicationId = db.Column(db.Integer, primary_key = True, nullable = False)
@@ -57,7 +58,7 @@ class City(db.Model):
 class Company(db.Model):
     CompanyId = db.Column(db.Integer, primary_key = True, nullable = False)
     CompanyName = db.Column(db.String(50), nullable = False)
-    CompanyWebsite = db.Column(db.String(100), nullable = True)
+    CompanyWebsite = db.Column(db.String(100), nullable = True) # TODO: We don't support multiple recruiter yet
 
 class Recruiter(db.Model):
     RecId = db.Column(db.Integer, primary_key = True, nullable = False)
@@ -72,80 +73,126 @@ class State(db.Model):
     StateName = db.Column(db.String(50), nullable = False)
     StateAbbr = db.Column(db.String(2), nullable = False)
 
-# Takes in applicationId, returns application fields associated with this applicationId
+# Takes in user email returns all applicatons associated with this UserEmail
+@app.route('/api/v1/search/applications/all', methods = ['GET'])
+def get_applications():
+	# get userid to find all associated applications
+
+	userEmail = request.args.get('email')
+
+	response = list()
+
+	info = text(
+		'SELECT * FROM application a JOIN company c ON a.CompanyId = c.CompanyId WHERE a.UserId = (SELECT UserId FROM user WHERE Email = :e_id);'
+	)
+
+	locations = text(
+		'SELECT c.CityName, s.StateAbbr FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id ORDER BY c.CityName ASC, s.StateAbbr ASC;'
+	)
+
+	basicInfo = engine.execute(info, e_id = userEmail)
+
+	for inf in basicInfo:
+		response.append({
+			"ApplicationId" : inf.ApplicationId,
+			"UserId" : inf.UserId,
+			"CompanyId" : inf.CompanyId,
+			"CompanyName" : inf.CompanyName,
+			"PositionTitle" : inf.PositionTitle,
+			"ApplicationLink" : inf.ApplicationLink,
+			"ApplicationStatus" : inf.ApplicationStatus,
+			"ApplicationDate" : inf.ApplicationDate,
+		})
+
+		locationInfo = engine.execute(locations, a_id = inf.ApplicationId)
+		for loc in locationInfo:
+			response.append({
+				"CityName" : loc.CityName,
+				"StateAbbr" : loc.StateAbbr
+			})
+			break;
+
+	responseObject = {
+		'response':response,
+
+	}
+	return make_response(responseObject, 200)
+
+# Takes in application id, returns application fields associated with this applicationId
 @app.route('/api/v1/search/applications', methods = ['GET'])
 def get_application():
-	# get applicationId to find associated application
-	appId = request.args.get("applicationId")
+    # get applicationId to find associated application
+    appId = request.args.get('id')
+    print(appId)
 
-	app = Application.query.filter_by(ApplicationId = appId).first()
+    app = Application.query.filter_by(ApplicationId = appId).first()
 
-	connection = engine.connect()
-	if app:
-		try:
+    connection = engine.connect()
+    if app:
+        try:
 
-			locations_query = text(
-				'SELECT * FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id;'
-			)
+            locations_query = text(
+                'SELECT * FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id;'
+            )
 
-			locations = engine.execute(locations_query, a_id = appId)
+            locations = engine.execute(locations_query, a_id = appId)
 
-			response = list()
-			for loc in locations:
-				response.append({
-					"CityName" : loc.CityName,
-					"StateName" : loc.StateName,
-					"StateAbbr" : loc.StateAbbr,
-				})
+            response = list()
+            for loc in locations:
+                response.append({
+                    "CityName" : loc.CityName,
+                    "StateName" : loc.StateName,
+                    "StateAbbr" : loc.StateAbbr,
+                })
 
-			application_query = text(
-				'SELECT * FROM company c JOIN application a ON a.CompanyId = c.CompanyId WHERE a.ApplicationId = :a_id;'
-			)
+            application_query = text(
+                'SELECT * FROM company c JOIN application a ON a.CompanyId = c.CompanyId WHERE a.ApplicationId = :a_id;'
+            )
 
-			application = engine.execute(application_query, a_id = appId).fetchone()
+            application = engine.execute(application_query, a_id = appId).fetchone()
 
-			recruiters_query = text(
-				'SELECT * FROM recruiter r JOIN application a ON a.RecId = r.RecId WHERE a.ApplicationId = :a_id;'
-			)
+            recruiters_query = text(
+                'SELECT * FROM recruiter r JOIN application a ON a.RecId = r.RecId WHERE a.ApplicationId = :a_id;'
+            )
 
-			recruiters = engine.execute(recruiters_query, a_id = appId)
+            recruiters = engine.execute(recruiters_query, a_id = appId)
 
-			response2 = list()
-			for rec in recruiters:
-				response2.append({
-					"RecFirstName" : rec.RecFirstName,
-					"RecLastName" : rec.RecLastName,
-					"RecEmail" : rec.RecEmail,
-					"RecPhone" : rec.RecPhone
-				})
+            response2 = list()
+            for rec in recruiters:
+                response2.append({
+                    "RecFirstName" : rec.RecFirstName,
+                    "RecLastName" : rec.RecLastName,
+                    "RecEmail" : rec.RecEmail,
+                    "RecPhone" : rec.RecPhone
+                })
 
-			# response
-			responseObject = {
-				'ApplicationId' : application.ApplicationId,
-				'UserId' : application.UserId,
-				'CompanyName':application.CompanyName,
-				'PositionTitle' : application.PositionTitle,
-				'ApplicationStatus' : application.ApplicationStatus,
-				'ApplicationDate' : application.ApplicationDate,
-				'ApplicationLink' : application.ApplicationLink,
-				'Recruiter' : response2,
-				'Locations' : response
+            # response
+            responseObject = {
+                'ApplicationId' : application.ApplicationId,
+                'UserId' : application.UserId,
+                'CompanyName':application.CompanyName,
+                'PositionTitle' : application.PositionTitle,
+                'ApplicationStatus' : application.ApplicationStatus,
+                'ApplicationDate' : application.ApplicationDate,
+                'ApplicationLink' : application.ApplicationLink,
+                'Recruiter' : response2,
+                'Locations' : response
 
-			}
-			return make_response(responseObject, 200)
-		except:
-			return make_response({
-				'status' : 'failed',
-				'message' : 'Some error occured !!'
-			}, 400)
-		finally:
-			connection.close()
-	else:
-		responseObject = {
-				'status' : 'fail',
-				'message': 'Application does not exist !!'
-		}
-		return make_response(responseObject, 400)
+            }
+            return make_response(responseObject, 200)
+        except:
+            return make_response({
+                'status' : 'failed',
+                'message' : 'Some error occured !!'
+            }, 400)
+        finally:
+            connection.close()
+    else:
+        responseObject = {
+                'status' : 'fail',
+                'message': 'Application does not exist !!'
+        }
+        return make_response(responseObject, 400)
 
 # Updates application in application table
 # Parameters: application id, position title, application link, company name, application status,
@@ -251,19 +298,83 @@ def update_application():
             'message' : 'Application does not exist !!'
         }, 400)
 
+# Adds a new location for this application in the application location table
+# Parameters: application id, city name, city state
+@app.route('/api/v1/add/locations', methods = ['POST'])
+def add_location():
+    appId = request.form.get('id')
+    cityName = request.form.get('city')
+    stateName = request.form.get('state')
+
+    app = Application.query.filter_by(ApplicationId=appId).first()
+
+    if app:
+        try:
+            session = Session()
+            session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+
+            # get city id and state id
+            city = session.query(City).filter_by(CityName=cityName).first()
+            print(city)
+            stateId = session.query(State.StateId).filter_by(StateName=stateName).first()[0]
+            print(stateId)
+
+            # add city if not in city table
+            if city is None:
+                cityId = session.query(func.max(City.CityId)).scalar() + 1
+                city = City(
+                    CityId = cityId,
+                    CityName = cityName
+                )
+                session.add(city)
+            else:
+                cityId = city.CityId
+
+            appLocation = Applicationlocation(
+                ApplicationId = appId,
+                CityId = cityId,
+                StateId = stateId
+            )
+
+            # add location to application location
+            session.add(appLocation)
+            session.commit()
+
+            return make_response({
+                'status' : 'success',
+                'message': 'Sucessfully registered.'
+            }, 200)
+        except:
+            session.rollback()
+            return make_response({
+                'status' : 'failed',
+                'message' : 'Some error occured !!'
+            }, 400)
+        finally:
+            session.close()
+    else:
+        return make_response({
+            'status' : 'failed',
+            'message' : 'Application does not exist !!'
+        }, 400)
+
 # Adds new application to application table
 # Parameters: user email, position title, application link, company name, application status,
-# city name, full state name
+# city name, full state name, recruiter first name, last name, email, and phone
 # Application link and status can be None
 @app.route('/api/v1/add/applications', methods = ['POST'])
 def add_application():
-    userEmail = request.form.get('email')
+    userEmail = request.form.get('userEmail')
     appPos = request.form.get('title')
     appLink = request.form.get('link')
     compName = request.form.get('company')
     appStatus = request.form.get('status')
     appCity = request.form.get('city')
     appState = request.form.get('state')
+    recFirstName = request.form.get('recFirst')
+    recLastName = request.form.get('recLast')
+    recEmail = request.form.get('recEmail')
+    recPhone = request.form.get('recPhone')
 
     user = User.query.filter_by(Email = userEmail).first()
 
@@ -295,6 +406,31 @@ def add_application():
             print("Added company")
             print(compId)
 
+            # get recruiter id based on unique email or phone (one or the other must be provided)
+            recruiter = None
+            if recEmail is not None:
+                recruiter = session.query(Recruiter).filter_by(RecEmail=recEmail).first()
+            else:
+                recruiter = session.query(Recruiter).filter_by(RecPhone=recPhone).first()
+
+            # add recruiter if not in recruiter table
+            if recruiter is None:
+                recId = session.query(func.max(Recruiter.RecId)).scalar() + 1
+                rec = Recruiter(
+                    RecId = recId,
+                    CompanyId = compId,
+                    RecEmail = recEmail,
+                    RecFirstName = recFirstName,
+                    RecLastName = recLastName,
+                    RecPhone = recPhone
+                )
+                session.add(rec)
+            else:
+                recId = recruiter.RecId
+            
+            print("Added recruiter")
+            print("rec id: ", recId)
+
             app = Application(
                 ApplicationId = id,
                 UserId = user.UserId,
@@ -302,14 +438,15 @@ def add_application():
                 PositionTitle = appPos,
                 ApplicationLink = appLink,
                 ApplicationStatus = appStatus,
-                ApplicationDate = None
+                ApplicationDate = None,
+                RecId = recId
             )
 
             # add application to application table
             session.add(app)
 
             print("Added application")
-
+            
             # get city id and state id
             city = session.query(City).filter_by(CityName=appCity).first()
             print(city)
