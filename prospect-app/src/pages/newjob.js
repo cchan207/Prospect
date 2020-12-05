@@ -19,6 +19,9 @@ export default function LandingPage() {
       // Location Information
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
+    //const [locationList, setLocationList] = useState([city, state])
+    const [locationList, setLocationList] = useState([{ City: "", State: "" }]);
+
       // Recruiter Information
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -40,7 +43,7 @@ export default function LandingPage() {
         console.log(company)
         console.log(appLink)
           // Location info
-        console.log(city)
+        //console.log(city)
         console.log(state)
           // Recruiter info
         console.log(firstName)
@@ -80,13 +83,44 @@ export default function LandingPage() {
     }
 
       // Location Information
-    const handleCity = (e) => {
-      setCity(e.target.value);
-    }
+    //const handleCity = (e) => {
+    //  setCity(e.target.value);
+   // }
 
-    const handleState = (e) => {
-      setState(e.target.value);
-    }
+    //const handleState = (e) => {
+    //  setState(e.target.value);
+   // }
+
+    //const handleLocationChange = (e, index) => {
+    //  const { name, value } = e.target;
+    //  const list = [...locationList];
+    //  list[index][name] = value;
+    //  setLocationList(list);
+    //}
+
+    // handle input change
+    const handleLocationChange = (e, index) => {
+    const { name, value } = e.target;
+    const list = [...locationList];
+    list[index][name] = value;
+    setLocationList(list);
+};
+ 
+// handle click event of the Remove button
+const handleRemoveClick = index => {
+  const list = [...locationList];
+  list.splice(index, 1);
+  setLocationList(list);
+};
+ 
+// handle click event of the Add button
+const handleAddClick = () => {
+  setLocationList([...locationList, { City: "", State: "" }]);
+};
+
+    //const handleAddLocation = () => {
+    //  setLocationList([...locationList, { city, state}]);
+    //}
 
       // Recruiter Information
     const handleFirstName = (e) => {
@@ -142,64 +176,80 @@ export default function LandingPage() {
                   <Form.Control type="textarea" placeholder="url" />
               </Form.Group>
               <h4>Location</h4>
-              <Form.Group onChange={handleCity} value={city}>
-                  <Form.Label>City</Form.Label>
-                  <Form.Control type="textarea" placeholder="City Name" />
-              </Form.Group>
-              <Form.Group onChange={handleState} value={state}>
-                <label for="States">State:</label>
-                <select id="state" name="state">
-                  <option value="Alabama">Alabama</option>
-                  <option value="Alaska">Alaska</option>
-                  <option value="Arizona">Arizona</option>
-                  <option value="Arkansas">Arkansas</option>
-                  <option value="California">California</option>
-                  <option value="Colorado">Colorado</option>
-                  <option value="Connecticut">Connecticut</option>
-                  <option value="Delaware">Delaware</option>
-                  <option value="Florida">Florida</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="Hawaii">Hawaii</option>
-                  <option value="Idaho">Idaho</option>
-                  <option value="Illinois">Illinois</option>
-                  <option value="Indiana">Indiana</option>
-                  <option value="Iowa">Iowa</option>
-                  <option value="Kansas">Kansas</option>
-                  <option value="Kentucky">Kentucky</option>
-                  <option value="Louisiana">Louisiana</option>
-                  <option value="Maine">Maine</option>
-                  <option value="Maryland">Maryland</option>
-                  <option value="Massachusetts">Massachusetts</option>
-                  <option value="Michigan">Michigan</option>
-                  <option value="Minnesota">Minnesota</option>
-                  <option value="Mississippi">Mississippi</option>
-                  <option value="Missouri">Missouri</option>
-                  <option value="Montana">Montana</option>
-                  <option value="Nebraska">Nebraska</option>
-                  <option value="Nevada">Nevada</option>
-                  <option value="New Hampshire">New Hampshire</option>
-                  <option value="New Jersey">New Jersey</option>
-                  <option value="New Mexico">New Mexico</option>
-                  <option value="New York">New York</option>
-                  <option value="North Carolina">North Carolina</option>
-                  <option value="North Dakota">North Dakota</option>
-                  <option value="Ohio">Ohio</option>
-                  <option value="Oklahoma">Oklahoma</option>
-                  <option value="Pennsylvania">Pannsylvania</option>
-                  <option value="Rhode Island">Rhode Island</option>
-                  <option value="South Carolina">South Carolina</option>
-                  <option value="South Dakota">South Dakota</option>
-                  <option value="Tennessee">Tennessee</option>
-                  <option value="Texas">Texas</option>
-                  <option value="Utah">Utah</option>
-                  <option value="Vermont">Vermont</option>
-                  <option value="Virginia">Virginia</option>
-                  <option value="Washington">Washington</option>
-                  <option value="West Virginia">West Virginia</option>
-                  <option value="Wisconsin">Wisconsin</option>
-                  <option value="Wyoming">Wyoming</option>
+              
+              {locationList.map((x, i) => {
+                return (
+                  <div className="box">
+                    
+                    <Form.Group onChange={e => handleLocationChange(e, i)} value={x.City}>
+                      <Form.Label>City</Form.Label>
+                      <Form.Control type="textarea" placeholder="City Name" />
+                    </Form.Group>
+                    
+                    <Form.Group onChange={e => handleLocationChange(e, i)} value={x.State}>
+                      <label for="States">State:</label>
+                      <select id="state" name="state">
+                        <option value="Alabama">Alabama</option>
+                        <option value="Alaska">Alaska</option>
+                        <option value="Arizona">Arizona</option>
+                        <option value="Arkansas">Arkansas</option>
+                        <option value="California">California</option>
+                        <option value="Colorado">Colorado</option>
+                        <option value="Connecticut">Connecticut</option>
+                        <option value="Delaware">Delaware</option>
+                        <option value="Florida">Florida</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Hawaii">Hawaii</option>
+                        <option value="Idaho">Idaho</option>
+                        <option value="Illinois">Illinois</option>
+                        <option value="Indiana">Indiana</option>
+                        <option value="Iowa">Iowa</option>
+                        <option value="Kansas">Kansas</option>
+                        <option value="Kentucky">Kentucky</option>
+                        <option value="Louisiana">Louisiana</option>
+                        <option value="Maine">Maine</option>
+                        <option value="Maryland">Maryland</option>
+                        <option value="Massachusetts">Massachusetts</option>
+                        <option value="Michigan">Michigan</option>
+                        <option value="Minnesota">Minnesota</option>
+                        <option value="Mississippi">Mississippi</option>
+                        <option value="Missouri">Missouri</option>
+                        <option value="Montana">Montana</option>
+                        <option value="Nebraska">Nebraska</option>
+                        <option value="Nevada">Nevada</option>
+                        <option value="New Hampshire">New Hampshire</option>
+                        <option value="New Jersey">New Jersey</option>
+                        <option value="New Mexico">New Mexico</option>
+                        <option value="New York">New York</option>
+                        <option value="North Carolina">North Carolina</option>
+                        <option value="North Dakota">North Dakota</option>
+                        <option value="Ohio">Ohio</option>
+                        <option value="Oklahoma">Oklahoma</option>
+                        <option value="Pennsylvania">Pannsylvania</option>
+                        <option value="Rhode Island">Rhode Island</option>
+                        <option value="South Carolina">South Carolina</option>
+                        <option value="South Dakota">South Dakota</option>
+                        <option value="Tennessee">Tennessee</option>
+                        <option value="Texas">Texas</option>
+                        <option value="Utah">Utah</option>
+                        <option value="Vermont">Vermont</option>
+                        <option value="Virginia">Virginia</option>
+                        <option value="Washington">Washington</option>
+                        <option value="West Virginia">West Virginia</option>
+                        <option value="Wisconsin">Wisconsin</option>
+                        <option value="Wyoming">Wyoming</option>
                 </select>
               </Form.Group>
+
+                  <div className="btn-box">
+                    {locationList.length !== 1 && <button
+                      className="mr10"
+                      onClick={() => handleRemoveClick(i)}>Remove</button>}
+                    {locationList.length - 1 === i && <button onClick={handleAddClick}>Add</button>}
+                  </div>
+               </div>
+              );
+              })}
               
               <h4>Recruiter Information</h4>
               <Form.Group onChange={handleFirstName} value={firstName}>
