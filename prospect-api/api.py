@@ -210,8 +210,6 @@ def update_application():
     appNewCity = request.form.get('newCity')
     appNewState = request.form.get('newState')
 
-    print(appId)
-
     app = Application.query.filter_by(ApplicationId = appId).first()
 
     if app:
@@ -237,17 +235,13 @@ def update_application():
                 compId = comp.CompanyId
 
             oldCity = session.query(City).filter_by(CityName=appOldCity).first()
-            print("old city: ", oldCity.CityId)
             oldLocation = session.query(Applicationlocation).filter_by(ApplicationId=appId, CityId=oldCity.CityId).first()
-            print(oldLocation.StateId)
             newStateId = session.query(State.StateId).filter_by(StateName=appNewState).first()[0]
-            print("state id: ", newStateId)
 
             # only change location if location has changed
             if oldLocation is not None and (appNewCity != appOldCity or oldLocation.StateId != newStateId):
                 # get city objects and state id
                 newCity = session.query(City).filter_by(CityName=appNewCity).first()
-                print("new city: ", newCity)
 
                 # add city if not in city table
                 if newCity is None:
@@ -259,16 +253,12 @@ def update_application():
                     )
                     session.add(city)
                 else:
-                    print("HERE")
                     cityId = newCity.CityId
                 
-                print("new city id: ", cityId)
-
                 # update old location from application location table
                 oldLocation = session.query(Applicationlocation) \
                             .filter_by(ApplicationId=appId, CityId=oldCity.CityId) \
                             .update({"CityId": cityId, "StateId": newStateId})
-            print("HERE")
 
             # update application
             application = session.query(Application).filter_by(ApplicationId=appId).update({
@@ -277,7 +267,6 @@ def update_application():
                 "ApplicationLink" : appLink,
                 "ApplicationStatus" : appStatus
             })
-            print("UPDATING APP")
             session.commit()
 
             return make_response({
@@ -315,9 +304,7 @@ def add_location():
 
             # get city id and state id
             city = session.query(City).filter_by(CityName=cityName).first()
-            print(city)
             stateId = session.query(State.StateId).filter_by(StateName=stateName).first()[0]
-            print(stateId)
 
             # add city if not in city table
             if city is None:
@@ -385,10 +372,8 @@ def add_application():
 
             # get unique application id
             id = session.query(func.max(Application.ApplicationId)).scalar() + 1
-            print(id)
             # get company id from company name
             comp = session.query(Company).filter_by(CompanyName=compName).first()
-            print(comp)
 
             # add company if not already in company table
             if comp is None:
@@ -402,9 +387,6 @@ def add_application():
                 session.add(company)
             else:
                 compId = comp.CompanyId
-
-            print("Added company")
-            print(compId)
 
             # get recruiter id based on unique email or phone (one or the other must be provided)
             recruiter = None
@@ -427,9 +409,6 @@ def add_application():
                 session.add(rec)
             else:
                 recId = recruiter.RecId
-            
-            print("Added recruiter")
-            print("rec id: ", recId)
 
             app = Application(
                 ApplicationId = id,
@@ -444,14 +423,10 @@ def add_application():
 
             # add application to application table
             session.add(app)
-
-            print("Added application")
             
             # get city id and state id
             city = session.query(City).filter_by(CityName=appCity).first()
-            print(city)
             stateId = session.query(State.StateId).filter_by(StateName=appState).first()[0]
-            print(stateId)
 
             # add city if not in city table
             if city is None:
@@ -504,13 +479,9 @@ def delete_application():
         session = Session()
         session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
         app = session.query(Application).filter_by(ApplicationId = appId).first()
-        print(app.ApplicationId)
 
         if (app):
-            print("hello1")
-
             session.delete(app)
-            print("hello2")
 
             # Delete each entry in Location table associated with Application
             location = session.query(Applicationlocation).filter_by(ApplicationId = appId).all()
