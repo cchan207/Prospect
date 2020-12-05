@@ -1,7 +1,7 @@
 # imports
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, func
 from sqlalchemy.orm import sessionmaker
 from flask_migrate import Migrate
 import time
@@ -31,46 +31,140 @@ Session = sessionmaker(bind=engine, autocommit=False)
 
 # ORMs for SQLAlchemy
 class User(db.Model):
-	UserId = db.Column(db.Integer, primary_key = True, nullable = False)
-	FirstName = db.Column(db.String(50), nullable = False)
-	LastName = db.Column(db.String(50), nullable = False)
-	Email = db.Column(db.String(50), nullable = False, unique = True)
+    UserId = db.Column(db.Integer, primary_key = True, nullable = False)
+    FirstName = db.Column(db.String(50), nullable = False)
+    LastName = db.Column(db.String(50), nullable = False)
+    Email = db.Column(db.String(50), nullable = False, unique = True)
 
 class Application(db.Model):
-	ApplicationId = db.Column(db.Integer, primary_key = True, nullable = False)
-	UserId = db.Column(db.Integer, nullable = False)
-	CompanyId = db.Column(db.Integer, nullable = False)
-	PositionTitle = db.Column(db.String(50), nullable = False)
-	ApplicationLink = db.Column(db.String(100), nullable = True)
-	ApplicationStatus = db.Column(db.String(50), nullable = False, default="PENDING")
-	ApplicationDate = db.Column(db.DateTime, nullable = False, default=time.strftime(r"%Y-%m-%d", time.localtime()))
+    ApplicationId = db.Column(db.Integer, primary_key = True, nullable = False)
+    UserId = db.Column(db.Integer, nullable = False)
+    CompanyId = db.Column(db.Integer, nullable = False)
+    PositionTitle = db.Column(db.String(50), nullable = False)
+    ApplicationLink = db.Column(db.String(100), nullable = True)
+    ApplicationStatus = db.Column(db.String(50), nullable = False, default="PENDING")
+    ApplicationDate = db.Column(db.DateTime, nullable = False, default=time.strftime(r"%Y-%m-%d", time.localtime()))
 
 class Applicationlocation(db.Model):
-	ApplicationId = db.Column(db.Integer, primary_key = True, nullable = False)
-	CityId = db.Column(db.Integer, nullable = False)
-	StateId = db.Column(db.Integer, nullable = False)
+    ApplicationId = db.Column(db.Integer, primary_key = True, nullable = False)
+    CityId = db.Column(db.Integer, nullable = False)
+    StateId = db.Column(db.Integer, nullable = False)
 
 class City(db.Model):
-	CityId = db.Column(db.Integer, primary_key = True, nullable = False)
-	CityName = db.Column(db.String(50), nullable = False)
+    CityId = db.Column(db.Integer, primary_key = True, nullable = False)
+    CityName = db.Column(db.String(50), nullable = False)
 
 class Company(db.Model):
-	CompanyId = db.Column(db.Integer, primary_key = True, nullable = False)
-	CompanyName = db.Column(db.String(50), nullable = False)
-	CompanyWebsite = db.Column(db.String(100), nullable = True)
+    CompanyId = db.Column(db.Integer, primary_key = True, nullable = False)
+    CompanyName = db.Column(db.String(50), nullable = False)
+    CompanyWebsite = db.Column(db.String(100), nullable = True)
 
 class Recruiter(db.Model):
-	RecId = db.Column(db.Integer, primary_key = True, nullable = False)
-	CompanyId = db.Column(db.Integer, nullable = False)
-	RecEmail = db.Column(db.String(50), nullable = True)
-	RecFirstName = db.Column(db.String(50), nullable = False)
-	RecLastName = db.Column(db.String(50), nullable = False)
-	RecPhone = db.Column(db.String(50), nullable = True)
+    RecId = db.Column(db.Integer, primary_key = True, nullable = False)
+    CompanyId = db.Column(db.Integer, nullable = False)
+    RecEmail = db.Column(db.String(50), nullable = True)
+    RecFirstName = db.Column(db.String(50), nullable = False)
+    RecLastName = db.Column(db.String(50), nullable = False)
+    RecPhone = db.Column(db.String(50), nullable = True)
 
 class State(db.Model):
-	StateId = db.Column(db.Integer, primary_key = True, nullable = False)
-	StateName = db.Column(db.String(50), nullable = False)
-	StateAbbr = db.Column(db.String(2), nullable = False)
+    StateId = db.Column(db.Integer, primary_key = True, nullable = False)
+    StateName = db.Column(db.String(50), nullable = False)
+    StateAbbr = db.Column(db.String(2), nullable = False)
+
+@app.route('/api/v1/update/applications', methods = ['POST'])
+def update_application():
+    appId = request.form.get('id')
+    appPos = request.form.get('title')
+    appLink = request.form.get('link')
+    compName = request.form.get('company')
+    appStatus = request.form.get('status')
+    appOldCity = request.form.get('oldCity') # need old city as part of key for application location
+                                             # < applicationId, oldCity >
+    appNewCity = request.form.get('newCity')
+    appNewState = request.form.get('newState')
+
+    print(appId)
+
+    app = Application.query.filter_by(ApplicationId = appId).first()
+
+    if app:
+        try:
+            session = Session()
+            session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+
+            # get company object
+            comp = session.query(Company).filter_by(CompanyName=compName).first()
+            print(comp)
+
+            # add company if not in company table
+            if comp is None:
+                compId = session.query(func.max(Company.CompanyId)).scalar() + 1
+                print(compId)
+                company = Company(
+                    CompanyId = compId,
+                    CompanyName = compName,
+                    CompanyWebsite = None # TODO: we don't let users enter the website for now
+                )
+                session.add(company)
+            else:
+                compId = comp.CompanyId
+
+            # get city objects and state id
+            city = session.query(City).filter_by(CityName=appNewCity).first()
+            print("city: ", city)
+            oldCity = session.query(City).filter_by(CityName=appOldCity).first()
+            print("old city: ", oldCity.CityId)
+            stateId = session.query(State.StateId).filter_by(StateName=appNewState).first()[0]
+            print("state id: ", stateId)
+
+            # add city if not in city table
+            if city is None:
+                cityId = session.query(func.max(City.CityId)).scalar() + 1
+                print(cityId)
+                city = City(
+                    CityId = cityId,
+                    CityName = appNewCity
+                )
+                session.add(city)
+            else:
+                cityId = city.CityId
+
+            print("app id: ", appId)
+            print("new city: ", cityId)
+
+             # update old location from application location table
+            oldLocation = session.query(Applicationlocation) \
+                        .filter_by(ApplicationId=appId, CityId=oldCity.CityId) \
+                        .update({"CityId": cityId, "StateId": stateId})
+
+            # update application
+            application = session.query(Application).filter_by(ApplicationId=appId).update({
+                "CompanyId" : compId,
+                "PositionTitle" : appPos,
+                "ApplicationLink" : appLink,
+                "ApplicationStatus" : appStatus
+            })
+            print("UPDATING APP")
+            session.commit()
+
+            return make_response({
+                'status' : 'success',
+                'message': 'Sucessfully updated.'
+            }, 200)
+        except:
+            session.rollback()
+            return make_response({
+                'status' : 'failed',
+                'message' : 'Some error occured !!'
+            }, 400)
+        finally:
+            session.close() 
+    else:
+        return make_response({
+            'status' : 'failed',
+            'message' : 'Application does not exist !!'
+        }, 400)
 
 @app.route('/api/v1/add/applications', methods = ['POST'])
 def add_application():
@@ -83,7 +177,6 @@ def add_application():
     appState = request.form.get('state')
 
     user = User.query.filter_by(Email = userEmail).first()
-    print(user.UserId)
 
     if user:
         try:
@@ -107,6 +200,8 @@ def add_application():
                     CompanyWebsite = None # TODO: we don't let users enter the website for now
                 )
                 session.add(company)
+            else:
+                compId = comp.CompanyId
 
             print("Added company")
             print(compId)
@@ -140,6 +235,8 @@ def add_application():
                     CityName = appCity
                 )
                 session.add(city)
+            else:
+                cityId = city.CityId
 
             appLocation = Applicationlocation(
                 ApplicationId = id,
@@ -151,7 +248,6 @@ def add_application():
             session.add(appLocation)
             session.commit()
 
-            # response
             return make_response({
                 'status' : 'success',
                 'message': 'Sucessfully registered.'
@@ -159,9 +255,9 @@ def add_application():
         except:
             session.rollback()
             return make_response({
-				'status' : 'failed',
-				'message' : 'Some error occured !!'
-			}, 400)
+                'status' : 'failed',
+                'message' : 'Some error occured !!'
+            }, 400)
         finally:
             session.close()
     else:
@@ -172,43 +268,43 @@ def add_application():
 
 @app.route('/api/v1/delete/applications', methods = ['POST', 'DELETE'])
 def delete_application():
-	# get applicationId to find associate application
-	appId = request.form.get('ApplicationId')
+    # get applicationId to find associate application
+    appId = request.form.get('ApplicationId')
 
-	try:
-		# create a Session
-		session = Session()
-		session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
-		app = session.query(Application).filter_by(ApplicationId = appId).first()
-		print(app.ApplicationId)
+    try:
+        # create a Session
+        session = Session()
+        session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+        app = session.query(Application).filter_by(ApplicationId = appId).first()
+        print(app.ApplicationId)
 
-		if (app):
-			print("hello1")
+        if (app):
+            print("hello1")
 
-			session.delete(app)
-			print("hello2")
+            session.delete(app)
+            print("hello2")
 
-			# Delete each entry in Location table associated with Application
-			location = session.query(Applicationlocation).filter_by(ApplicationId = appId).all()
+            # Delete each entry in Location table associated with Application
+            location = session.query(Applicationlocation).filter_by(ApplicationId = appId).all()
 
-			if len(location) != 0:
-				for l in location:
-					session.delete(l)
+            if len(location) != 0:
+                for l in location:
+                    session.delete(l)
 
-			session.commit()
+            session.commit()
 
-			responseObject = {
-				'status' : 'success',
-				'message' : 'Sucessfully deleted.'
-			}
-			return make_response(responseObject, 200)
-		else:
-			session.rollback()
-			return make_response({
-			'status' : 'failed',
-			'message' : 'Some error occured !!'
-		}, 400)
-	except:
+            responseObject = {
+                'status' : 'success',
+                'message' : 'Sucessfully deleted.'
+            }
+            return make_response(responseObject, 200)
+        else:
+            session.rollback()
+            return make_response({
+            'status' : 'failed',
+            'message' : 'Some error occured !!'
+        }, 400)
+    except:
         # on rollback, the same closure of state
         # as that of commit proceeds.
         session.rollback()
@@ -216,9 +312,9 @@ def delete_application():
             'status' : 'failed',
             'message' : 'Some error occured !!'
         }, 400)
-	finally:
+    finally:
         session.close()
 
 if __name__ == "__main__":
-	# serving the app directly
-	app.run()
+    # serving the app directly
+    app.run()
