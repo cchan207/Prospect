@@ -72,3 +72,50 @@ def get_application():
 				'message': 'Application does not exist !!'
 		}
 		return make_response(responseObject, 400)
+
+
+
+# Takes in UserEmail returns all applicatons associated with this UserEmail
+@app.route('/api/v1/search/applications/all', methods = ['GET'])
+def get_applications():
+	# get userid to find all associated applications
+
+	userEmail = request.args.get('userEmail')
+
+	response = list()
+
+	info = text(
+		'SELECT * FROM application a JOIN company c ON a.CompanyId = c.CompanyId WHERE a.UserId = (SELECT UserId FROM user WHERE Email = :e_id);'
+	)
+
+	locations = text(
+		'SELECT c.CityName, s.StateAbbr FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id ORDER BY c.CityName ASC, s.StateAbbr ASC;'
+	)
+
+	basicInfo = engine.execute(info, e_id = userEmail)
+
+	for inf in basicInfo:
+		response.append({
+			"ApplicationId" : inf.ApplicationId,
+			"UserId" : inf.UserId,
+			"CompanyId" : inf.CompanyId,
+			"CompanyName" : inf.CompanyName,
+			"PositionTitle" : inf.PositionTitle,
+			"ApplicationLink" : inf.ApplicationLink,
+			"ApplicationStatus" : inf.ApplicationStatus,
+			"ApplicationDate" : inf.ApplicationDate,
+		})
+
+		locationInfo = engine.execute(locations, a_id = inf.ApplicationId)
+		for loc in locationInfo:
+			response.append({
+				"CityName" : loc.CityName,
+				"StateAbbr" : loc.StateAbbr
+			})
+			break;
+
+	responseObject = {
+		'response':response,
+
+	}
+	return make_response(responseObject, 200)
