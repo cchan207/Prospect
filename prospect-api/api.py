@@ -2,6 +2,7 @@
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 from flask_migrate import Migrate
 import time
 
@@ -24,6 +25,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]= True
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 engine = create_engine(f"mysql+mysqldb://root:{PASSWORD}@{PUBLIC_IP_ADDRESS}/{DBNAME}?unix_socket=/cloudsql/{PROJECT_ID}:{INSTANCE_NAME}", convert_unicode=True)
+
+# Create a session
+Session = sessionmaker(bind=engine, autocommit=False)
 
 # ORMs for SQLAlchemy
 class User(db.Model):
@@ -491,41 +495,56 @@ def update_application():
 		}
 		return make_response(responseObject, 400)
 
+# TODO: turn this into a transaction
 @app.route('/api/v1/delete/applications', methods = ['POST', 'DELETE'])
 def delete_application():
 	# get applicationId to find associate application
 	appId = request.form.get('ApplicationId')
 
-	app = Application.query.filter_by(ApplicationId = appId).first()
+	try:
+		# create a Session
+		session = Session()
+		session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+		app = session.query(Application).filter_by(ApplicationId = appId).first()
+		print(app.ApplicationId)
 
-	connection = engine.connect()
-	if app:
-		try:
-			application_delete_query = text(
-				'DELETE FROM application WHERE ApplicationId = :a_id;'
-			)
-			engine.execute(application_delete_query, a_id = app.ApplicationId)
+		if (app):
+			print("hello1")
 
-			# response
+			session.delete(app)
+			print("hello2")
+
+			# Delete each entry in Location table associated with Application
+			location = session.query(Applicationlocation).filter_by(ApplicationId = appId).all()
+
+			if len(location) != 0:
+				for l in location:
+					session.delete(l)
+
+			session.commit()
+
 			responseObject = {
 				'status' : 'success',
 				'message' : 'Sucessfully deleted.'
 			}
 			return make_response(responseObject, 200)
-		except:
+		else:
+			session.rollback()
+			return make_response({
+			'status' : 'failed',
+			'message' : 'Some error occured !!'
+		}, 400)
+	except:
+			# on rollback, the same closure of state
+			# as that of commit proceeds.
+			session.rollback()
 			return make_response({
 				'status' : 'failed',
 				'message' : 'Some error occured !!'
 			}, 400)
-		finally:
-			connection.close()
-	else:
-		responseObject = {
-				'status' : 'fail',
-				'message': 'Application does not exist !!'
-		}
-		return make_response(responseObject, 400)
+	finally:
 
+			session.close()
 
 # Takes in applicationId, returns application associated with this applicationId
 @app.route('/api/v1/search/applications', methods = ['GET'])
@@ -581,7 +600,7 @@ def get_applications():
 			response = list()
 
 			for app in applications:
-				
+
 
 				company = Company.query.filter_by(CompanyId = app.CompanyId).first()
 				response.append({
