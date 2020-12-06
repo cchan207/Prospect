@@ -42,12 +42,6 @@ const Orders = () => {
       fetchApplications();
   },[]);
 
-
-  // Generate Order Data
-  function createData(id, jobTitle, company, location, date, status) {
-    return { id, jobTitle, company, location, date, status };
-  }
-
   console.log(appData.response);
 
   const classes = useStyles();

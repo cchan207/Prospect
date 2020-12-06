@@ -78,36 +78,79 @@ def set_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
+@app.route('/api/v1/count/applications/status', methods = ['GET'])
+def get_count_status():
+    userEmail = request.args.get('email')
+
+    user = User.query.filter_by(Email=userEmail).first()
+
+    connection = engine.connect()
+    if user:
+        try:
+            response = list()
+
+            get_count_by_status_query = text(
+                'SELECT ApplicationStatus, COUNT(*) AS Total FROM application WHERE UserId = (SELECT UserId FROM user WHERE Email = :e) GROUP BY ApplicationStatus;'
+            )
+            summary_data = engine.execute(get_count_by_status_query, e = userEmail)
+
+            for row in summary_data:
+                response.append({
+                    "ApplicationStatus" : row.ApplicationStatus,
+                    "Total" : row.Total
+            })
+            return make_response({
+                        'status' : 'success',
+                        'message' : response
+                    }, 200)
+        except:
+            return make_response({
+                    'status' : 'failed',
+                    'message' : 'Some error occured !!'
+                }, 400)
+        finally:
+            connection.close()
+    else:
+        responseObject = {
+                'status' : 'failed',
+                'message': 'User does not exist !!'
+        }
+        return make_response(responseObject, 400)
+
 # Takes in user email returns all applicatons associated with this UserEmail
 @app.route('/api/v1/search/applications/all', methods = ['GET'])
 def get_applications():
-	# get userid to find all associated applications
+    # get userid to find all associated applications
+    userEmail = request.args.get('email')
 
-	userEmail = request.args.get('email')
+    user = User.query.filter_by(Email=userEmail).first()
 
-	response = list()
+    connection = engine.connect()
+    if user:
+        try:
+            response = list()
 
-	info = text(
-		'SELECT * FROM application a JOIN company c ON a.CompanyId = c.CompanyId WHERE a.UserId = (SELECT UserId FROM user WHERE Email = :e_id);'
-	)
+            info = text(
+                'SELECT * FROM application a JOIN company c ON a.CompanyId = c.CompanyId WHERE a.UserId = (SELECT UserId FROM user WHERE Email = :e_id);'
+            )
 
-	locations = text(
-		'SELECT c.CityName, s.StateAbbr FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id ORDER BY c.CityName ASC, s.StateAbbr ASC;'
-	)
+            locations = text(
+                'SELECT c.CityName, s.StateAbbr FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id ORDER BY c.CityName ASC, s.StateAbbr ASC;'
+            )
 
-	basicInfo = engine.execute(info, e_id = userEmail)
+            basicInfo = engine.execute(info, e_id = userEmail)
 
-	for inf in basicInfo:
-		response.append({
-			"ApplicationId" : inf.ApplicationId,
-			"UserId" : inf.UserId,
-			"CompanyId" : inf.CompanyId,
-			"CompanyName" : inf.CompanyName,
-			"PositionTitle" : inf.PositionTitle,
-			"ApplicationLink" : inf.ApplicationLink,
-			"ApplicationStatus" : inf.ApplicationStatus,
-			"ApplicationDate" : inf.ApplicationDate,
-		})
+            for inf in basicInfo:
+                response.append({
+                    "ApplicationId" : inf.ApplicationId,
+                    "UserId" : inf.UserId,
+                    "CompanyId" : inf.CompanyId,
+                    "CompanyName" : inf.CompanyName,
+                    "PositionTitle" : inf.PositionTitle,
+                    "ApplicationLink" : inf.ApplicationLink,
+                    "ApplicationStatus" : inf.ApplicationStatus,
+                    "ApplicationDate" : inf.ApplicationDate,
+                })
 
 		# locationInfo = engine.execute(locations, a_id = inf.ApplicationId)
 		# for loc in locationInfo:
@@ -118,18 +161,30 @@ def get_applications():
 		# 	})
 		# 	break
 
-	responseObject = {
-		'response':response,
+            responseObject = {
+                'response':response,
 
-	}
-	return make_response(responseObject, 200)
+            }
+            return make_response(responseObject, 200)
+        except:
+            return make_response({
+                    'status' : 'failed',
+                    'message' : 'Some error occured !!'
+                }, 400)
+        finally:
+            connection.close()
+    else:
+        responseObject = {
+                'status' : 'failed',
+                'message': 'User does not exist !!'
+        }
+        return make_response(responseObject, 400)
 
 # Takes in application id, returns application fields associated with this applicationId
 @app.route('/api/v1/search/applications', methods = ['GET'])
 def get_application():
     # get applicationId to find associated application
     appId = request.args.get('id')
-    print(appId)
 
     app = Application.query.filter_by(ApplicationId = appId).first()
 
@@ -215,13 +270,17 @@ def update_application():
                                              # < applicationId, oldCity >
     appNewCity = request.form.get('newCity')
     appNewState = request.form.get('newState')
+    recFirstName = request.form.get('recFirst')
+    recLastName = request.form.get('recLast')
+    recEmail = request.form.get('recEmail')
+    recPhone = request.form.get('recPhone')
 
     app = Application.query.filter_by(ApplicationId = appId).first()
 
     if app:
         try:
             session = Session()
-            session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+            session.connection(execution_options={'isolation_level': 'REPEATABLE READ'})
 
             # get company object
             comp = session.query(Company).filter_by(CompanyName=compName).first()
@@ -239,6 +298,34 @@ def update_application():
                 session.add(company)
             else:
                 compId = comp.CompanyId
+
+            # get recruiter id based on unique email or phone (one or the other must be provided)
+            recruiter = None
+            if recEmail is not None:
+                recruiter = session.query(Recruiter).filter_by(RecEmail=recEmail).first()
+            else:
+                recruiter = session.query(Recruiter).filter_by(RecPhone=recPhone).first()
+
+            # add recruiter if not in recruiter table
+            if recruiter is None:
+                recId = session.query(func.max(Recruiter.RecId)).scalar() + 1
+                rec = Recruiter(
+                    RecId = recId,
+                    CompanyId = compId,
+                    RecEmail = recEmail,
+                    RecFirstName = recFirstName,
+                    RecLastName = recLastName,
+                    RecPhone = recPhone
+                )
+                session.add(rec)
+            else:
+                recId = recruiter.RecId
+                # update recruiter
+                session.query(Recruiter).filter_by(RecId=recId) \
+                    .update({"RecId": recId, "RecFirstName": recFirstName, "RecLastName": recLastName, "RecEmail": recEmail, "RecPhone": recPhone})
+
+            # update application
+            session.query(Application).filter_by(ApplicationId=appId).update({"RecId": recId})
 
             oldCity = session.query(City).filter_by(CityName=appOldCity).first()
             oldLocation = session.query(Applicationlocation).filter_by(ApplicationId=appId, CityId=oldCity.CityId).first()
@@ -306,7 +393,7 @@ def add_location():
     if app:
         try:
             session = Session()
-            session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+            session.connection(execution_options={'isolation_level': 'REPEATABLE READ'})
 
             # get city id and state id
             city = session.query(City).filter_by(CityName=cityName).first()
@@ -374,7 +461,7 @@ def add_application():
     if user:
         try:
             session = Session()
-            session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+            session.connection(execution_options={'isolation_level': 'REPEATABLE READ'})
 
             # get unique application id
             id = session.query(func.max(Application.ApplicationId)).scalar() + 1
@@ -483,7 +570,7 @@ def delete_application():
     try:
         # create a Session
         session = Session()
-        session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+        session.connection(execution_options={'isolation_level': 'READ COMMITTED'})
         app = session.query(Application).filter_by(ApplicationId = appId).first()
 
         if (app):
