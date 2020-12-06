@@ -36,7 +36,7 @@ const Orders = () => {
   
   useEffect( async () => {
       const fetchApplications = async () => {
-        const result = await axios.get(localhost + get_applications_api + `?Email=chan207@purdue.edu`, { crossorigin:true });
+        const result = await axios.get(localhost + get_applications_api + `?email=chan207@purdue.edu`, { crossorigin:true });
         console.log(result.data);
         setApps(result.data);
       }
