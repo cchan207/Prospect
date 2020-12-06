@@ -209,6 +209,10 @@ def update_application():
                                              # < applicationId, oldCity >
     appNewCity = request.form.get('newCity')
     appNewState = request.form.get('newState')
+    recFirstName = request.form.get('recFirst')
+    recLastName = request.form.get('recLast')
+    recEmail = request.form.get('recEmail')
+    recPhone = request.form.get('recPhone')
 
     app = Application.query.filter_by(ApplicationId = appId).first()
 
@@ -233,6 +237,34 @@ def update_application():
                 session.add(company)
             else:
                 compId = comp.CompanyId
+
+            # get recruiter id based on unique email or phone (one or the other must be provided)
+            recruiter = None
+            if recEmail is not None:
+                recruiter = session.query(Recruiter).filter_by(RecEmail=recEmail).first()
+            else:
+                recruiter = session.query(Recruiter).filter_by(RecPhone=recPhone).first()
+
+            # add recruiter if not in recruiter table
+            if recruiter is None:
+                recId = session.query(func.max(Recruiter.RecId)).scalar() + 1
+                rec = Recruiter(
+                    RecId = recId,
+                    CompanyId = compId,
+                    RecEmail = recEmail,
+                    RecFirstName = recFirstName,
+                    RecLastName = recLastName,
+                    RecPhone = recPhone
+                )
+                session.add(rec)
+            else:
+                recId = recruiter.RecId
+                # update recruiter
+                session.query(Recruiter).filter_by(RecId=recId) \
+                    .update({"RecId": recId, "RecFirstName": recFirstName, "RecLastName": recLastName, "RecEmail": recEmail, "RecPhone": recPhone})
+
+            # update application
+            session.query(Application).filter_by(ApplicationId=appId).update({"RecId": recId})
 
             oldCity = session.query(City).filter_by(CityName=appOldCity).first()
             oldLocation = session.query(Applicationlocation).filter_by(ApplicationId=appId, CityId=oldCity.CityId).first()
