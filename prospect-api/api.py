@@ -73,57 +73,112 @@ class State(db.Model):
     StateName = db.Column(db.String(50), nullable = False)
     StateAbbr = db.Column(db.String(2), nullable = False)
 
+@app.route('/api/v1/count/applications/status', methods = ['GET'])
+def get_count_status():
+    userEmail = request.args.get('email')
+
+    user = User.query.filter_by(Email=userEmail).first()
+
+    connection = engine.connect()
+    if user:
+        try:
+            response = list()
+
+            get_count_by_status_query = text(
+                'SELECT ApplicationStatus, COUNT(*) AS Total FROM application WHERE UserId = (SELECT UserId FROM user WHERE Email = :e) GROUP BY ApplicationStatus;'
+            )
+            summary_data = engine.execute(get_count_by_status_query, e = userEmail)
+
+            for row in summary_data:
+                response.append({
+                    "ApplicationStatus" : row.ApplicationStatus,
+                    "Total" : row.Total
+            })
+            return make_response({
+                        'status' : 'success',
+                        'message' : response
+                    }, 200)
+        except:
+            return make_response({
+                    'status' : 'failed',
+                    'message' : 'Some error occured !!'
+                }, 400)
+        finally:
+            connection.close()
+    else:
+        responseObject = {
+                'status' : 'failed',
+                'message': 'User does not exist !!'
+        }
+        return make_response(responseObject, 400)
+
 # Takes in user email returns all applicatons associated with this UserEmail
 @app.route('/api/v1/search/applications/all', methods = ['GET'])
 def get_applications():
-	# get userid to find all associated applications
+    # get userid to find all associated applications
+    userEmail = request.args.get('email')
 
-	userEmail = request.args.get('email')
+    user = User.query.filter_by(Email=userEmail).first()
 
-	response = list()
+    connection = engine.connect()
+    if user:
+        try:
+            response = list()
 
-	info = text(
-		'SELECT * FROM application a JOIN company c ON a.CompanyId = c.CompanyId WHERE a.UserId = (SELECT UserId FROM user WHERE Email = :e_id);'
-	)
+            info = text(
+                'SELECT * FROM application a JOIN company c ON a.CompanyId = c.CompanyId WHERE a.UserId = (SELECT UserId FROM user WHERE Email = :e_id);'
+            )
 
-	locations = text(
-		'SELECT c.CityName, s.StateAbbr FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id ORDER BY c.CityName ASC, s.StateAbbr ASC;'
-	)
+            locations = text(
+                'SELECT c.CityName, s.StateAbbr FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id ORDER BY c.CityName ASC, s.StateAbbr ASC;'
+            )
 
-	basicInfo = engine.execute(info, e_id = userEmail)
+            basicInfo = engine.execute(info, e_id = userEmail)
 
-	for inf in basicInfo:
-		response.append({
-			"ApplicationId" : inf.ApplicationId,
-			"UserId" : inf.UserId,
-			"CompanyId" : inf.CompanyId,
-			"CompanyName" : inf.CompanyName,
-			"PositionTitle" : inf.PositionTitle,
-			"ApplicationLink" : inf.ApplicationLink,
-			"ApplicationStatus" : inf.ApplicationStatus,
-			"ApplicationDate" : inf.ApplicationDate,
-		})
+            for inf in basicInfo:
+                response.append({
+                    "ApplicationId" : inf.ApplicationId,
+                    "UserId" : inf.UserId,
+                    "CompanyId" : inf.CompanyId,
+                    "CompanyName" : inf.CompanyName,
+                    "PositionTitle" : inf.PositionTitle,
+                    "ApplicationLink" : inf.ApplicationLink,
+                    "ApplicationStatus" : inf.ApplicationStatus,
+                    "ApplicationDate" : inf.ApplicationDate,
+                })
 
-		locationInfo = engine.execute(locations, a_id = inf.ApplicationId)
-		for loc in locationInfo:
-			response.append({
-				"CityName" : loc.CityName,
-				"StateAbbr" : loc.StateAbbr
-			})
-			break
+                locationInfo = engine.execute(locations, a_id = inf.ApplicationId)
+                for loc in locationInfo:
+                    response.append({
+                        "CityName" : loc.CityName,
+                        "StateAbbr" : loc.StateAbbr
+                    })
+                    break
 
-	responseObject = {
-		'response':response,
+            responseObject = {
+                'response':response,
 
-	}
-	return make_response(responseObject, 200)
+            }
+            return make_response(responseObject, 200)
+        except:
+            return make_response({
+                    'status' : 'failed',
+                    'message' : 'Some error occured !!'
+                }, 400)
+        finally:
+            connection.close()
+    else:
+        responseObject = {
+                'status' : 'failed',
+                'message': 'User does not exist !!'
+        }
+        return make_response(responseObject, 400)
 
 # Takes in application id, returns application fields associated with this applicationId
 @app.route('/api/v1/search/applications', methods = ['GET'])
 def get_application():
     # get applicationId to find associated application
     appId = request.args.get('id')
-    print(appId)
 
     app = Application.query.filter_by(ApplicationId = appId).first()
 
