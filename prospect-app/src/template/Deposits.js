@@ -40,20 +40,6 @@ export default function Deposits() {
           setDenied(res.data.message[i].Total);
         }
       }
-<<<<<<< HEAD
-
-      if (pending == "") {
-        setPending(0);
-      }
-      if (denied == "") {
-        setDenied(0);
-      }
-      if (accepted == "") {
-        setAccepted(0);
-      }
-
-=======
->>>>>>> dashboard
       console.log(res);
     }
     fetchSummary();
