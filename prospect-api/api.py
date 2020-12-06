@@ -477,7 +477,7 @@ def delete_application():
     try:
         # create a Session
         session = Session()
-        session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+        session.connection(execution_options={'isolation_level': 'READ COMMITTED'})
         app = session.query(Application).filter_by(ApplicationId = appId).first()
 
         if (app):
