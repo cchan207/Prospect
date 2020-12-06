@@ -43,9 +43,11 @@ export default function Deposits() {
 
       if (pending == "") {
         setPending(0);
-      } else if (denied == "") {
+      }
+      if (denied == "") {
         setDenied(0);
-      } else if (accepted == "") {
+      }
+      if (accepted == "") {
         setAccepted(0);
       }
 
