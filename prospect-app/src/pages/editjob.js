@@ -22,18 +22,21 @@ export default function Testing() {
     const [status, setStatus] = useState('');
     const [disabledStatus, setDisabledStatus] = useState('');
     const [locationDisabled, setLocationDisabled] = useState('');
+    const [editDisabled, setEditDisabled] = useState('');
+    const [link, setLink] = useState('');
     const [hiddenStatus, setHiddenStatus] = useState('');
     const [locations, setLocations] = useState([{ CityName: "", StateAbbr: "", StateName: "" }]);
     const [oldLocations, setOldLocations] = useState([{ CityName: "", StateAbbr: "", StateName: "" }]);
-    const [newLocations, setNewLocations] = useState([{ CityName: "", StateName: "" }]);
+    //const [newLocations, setNewLocations] = useState([{ CityName: "", StateName: "" }]);
     const history = useHistory();
 
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        setDisabledStatus(true); // keep this
-        setHiddenStatus(true); //keep this
+        setDisabledStatus(true);
+        setHiddenStatus(true);
         setLocationDisabled(true);
+        setEditDisabled(false);
 
 
         const urlLink = `http://127.0.0.1:5000/api/v1/search/applications?id=${appId}`; //CHANGE THIS EVENTUALLY
@@ -45,6 +48,7 @@ export default function Testing() {
           setOldLocations(result.data.Locations);
           setCompanyName(result.data.CompanyName);
           setJobTitle(result.data.PositionTitle);
+          setLink(result.data.ApplicationLink);
 
           setRecruiterFirstName(result.data.Recruiter[0].RecFirstName);
           setRecruiterLastName(result.data.Recruiter[0].RecLastName);
@@ -81,6 +85,10 @@ export default function Testing() {
       setJobTitle(e.target.value);
     }
 
+    const handleLink = (e) => {
+      setLink(e.target.value);
+    }
+
     const handleCompany = (e) => {
       setCompanyName(e.target.value);
     }
@@ -108,21 +116,27 @@ export default function Testing() {
     const enableEdits = (e) => {
         console.log("Enable Edits");
         setDisabledStatus(false);
+        setEditDisabled(true);
         setLocationDisabled(false);
     }
 
     const deleteTheJob = (e) => {
         console.log("Delete Job");
+        const id = 5; //TEMPPPPPPPPPPP
         const urlLink = "http://127.0.0.1:5000/api/v1/delete/applications"; //ADD PARAMETERS: applicaiton id
-      //const res = axios.post(urlLink,`id=${something}`);
+        //const res = axios.post(urlLink,`id=${id}`);
         history.push('/home');
     }
 
     const saveNewLocation = (e) => {
         console.log("Save New Location");
+
         const urlLink = "http://127.0.0.1:5000/api/v1/add/locations"; //ADD PARAMETERS: application id, city name, city state
-        //const res = axios.post(urlLink,`id=${something}&city=${something}&state=${something}`);
-        console.log(locations.slice(-1)[0]);              //FirstName=${firstName}&LastName=${lastName}&Email=${email}
+        const id = 5; //TEMPPPPPPPPPPP
+        const entry = locations.slice(-1)[0];
+        const res = axios.post(urlLink,`id=${id}&city=${entry.CityName}&state=${entry.StateName}`);
+
+        setEditDisabled(true);
         setHiddenStatus(true);
         setLocationDisabled(false);
         setDisabledStatus(false);
@@ -131,25 +145,61 @@ export default function Testing() {
     const addLocationSpace = (e) => {
         console.log("Add Location Space");
         setHiddenStatus(false);
+        setEditDisabled(true);
         setDisabledStatus(true);
         setLocations([...locations, { CityName: "", StateAbbr: "", StateName: "" }]);
+        setOldLocations([...locations, { CityName: "", StateAbbr: "", StateName: "" }]);
     }
 
     const updateDatabase = (e) => {
         console.log("Update Database");
         setDisabledStatus(true);
         setLocationDisabled(true);
-        const urlLink = "http://127.0.0.1:5000/api/v1/update/applications"; //ADD PARAMETERS: application id, position title, application link, company name, application status, current city name, new city name, new state name
-        //const res = axios.post(urlLink,`ApplicationId=1&CompanyId=1&PositionTitle=${jobTitle}&AppicationLink=link2&ApplicationStatus=${status}&ApplicationDate=idk`);
+        setEditDisabled(false);
+        const urlLink = "http://127.0.0.1:5000/api/v1/update/applications";
+        for (var i = 0; i < locations.length; i++){
+          const oldCity = oldLocations[i].CityName;
+          const newCity = locations[i].CityName;
+          const newState = locations[i].StateName;
+          const id = 10;
+          console.log("BEFORE");
+          console.log(oldCity);
+          console.log(newCity);
+          console.log(newState);
+          console.log(id);
+          console.log(jobTitle);
+          console.log(link);
+          console.log(companyName);
+          console.log(status);
+
+           //TEMPPPPPPPPPPP
+          axios.post(urlLink, {
+              id: `${id}`,
+              title: `${jobTitle}`,
+              company: `${companyName}`,
+              status: `${status}`,
+              oldCity: `${oldCity}`,
+              newCity: `${newCity}`,
+              newState: `${newState}`
+          })
+          .then (function (response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            console.log(error);
+          })
+
+
+        }
     }
 
-    return (
+  return (
       <div>
           <Navbar />
           <div className="editPage">
             <Form className="editJobButtons">
               <Form.Group>
-                <Button className="editJob" onClick={enableEdits}>Edit Job</Button>
+                <Button disabled={editDisabled} className="editJob" onClick={enableEdits}>Edit Job</Button>
               </Form.Group>
               <Form.Group>
                 <Button className="deleteJob" onClick={deleteTheJob}>Delete Job</Button>
@@ -175,8 +225,12 @@ export default function Testing() {
                 <Form.Control disabled={disabledStatus} type="text" className="editValue" value={companyName} onChange={handleCompany}/>
             </Form.Group>
             <Form.Group className="editRows">
-                <Form.Label className="editText">Status</Form.Label>
+                <Form.Label className="editText">Current Status</Form.Label>
                 <Form.Control disabled={disabledStatus} type="text" className="editValue" value={status} onChange={handleStatus}/>
+            </Form.Group>
+            <Form.Group className="editRows">
+                <Form.Label className="editText">Application Link</Form.Label>
+                <Form.Control disabled={disabledStatus} type="text" className="editValue" value={link} onChange={handleLink}/>
             </Form.Group>
 
 
@@ -277,13 +331,3 @@ export default function Testing() {
       </div>
     )
 }
-
-
-//<Form.Group className="editRows" onChange={handleLocations}>
-//    <Form.Label className="editText">Locations</Form.Label>
-//    <Form.Control as="text" className="editValue">Nowhere</Form.Control>
-//</Form.Group>
-//<Form.Group className="editRows" onChange={handleRecuiter}>
-//    <Form.Label className="editText">Recruiter</Form.Label>
-//    <Form.Control as="text" className="editValue">No One</Form.Control>
-//</Form.Group>

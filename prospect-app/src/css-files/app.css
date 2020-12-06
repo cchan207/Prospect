@@ -143,6 +143,14 @@
   border-color:#00b75c;
 }
 
+.editJob:disabled,
+.editJob:disabled:hover,
+.editJob:disabled:active,
+.editJob:disabled:hover:active {
+  background-color:#bbbbbb;
+  border-color:#bbbbbb;
+}
+
 .updateDatabase:disabled,
 .updateDatabase:disabled:hover,
 .updateDatabase:disabled:active,
