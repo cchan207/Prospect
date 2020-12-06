@@ -1,5 +1,8 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { useHistory } from "react-router-dom";
+import AddBoxIcon from '@material-ui/icons/AddBox';
+import EditIcon from '@material-ui/icons/Edit';
 import Link from '@material-ui/core/Link';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -26,69 +29,67 @@ const useStyles = makeStyles((theme) => ({
 
 const Orders = () => {
   const { user, isLoading } = useAuth0();
-  const email = !isLoading && user.email;
-  if (email) {
-    console.log(email);
-  }
 
   const [appData, setApps] = useState({ message: [] });
   // const [isError, setIsError] = useState(false);
-  
+
   useEffect( async () => {
       const fetchApplications = async () => {
-        const result = await axios.get(localhost + get_applications_api + `?Email=chan207@purdue.edu`, { crossorigin:true });
+        const result = await axios.get(localhost + get_applications_api + `?email=chan207@purdue.edu`, { crossorigin:true });
         console.log(result.data);
         setApps(result.data);
       }
       fetchApplications();
   },[]);
 
+
   // Generate Order Data
   function createData(id, jobTitle, company, location, date, status) {
     return { id, jobTitle, company, location, date, status };
   }
 
-  const rows = [
-  createData(
-    0,
-    'Software Engineer',
-    'Salesforce',
-    'Indianapolis, IN',
-    '2020-12-3',
-    'PENDING',
-  ),
-  ];
+  console.log(appData.response);
 
   const classes = useStyles();
   return (
     <React.Fragment>
-      <Title>Job Applications</Title>
+      <Title>Job Applications
+      <Link href='/add-job/' >
+        <AddBoxIcon className="add-app"/>
+      </Link>
+      </Title>
+
       <Table size="small">
         <TableHead>
           <TableRow>
             <TableCell>Job Title</TableCell>
             <TableCell>Company</TableCell>
-            <TableCell>Location</TableCell>
+            <TableCell>Link</TableCell>
             <TableCell>Date</TableCell>
-            <TableCell align="right">Status</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>{row.jobTitle}</TableCell>
-              <TableCell>{row.company}</TableCell>
-              <TableCell>{row.location}</TableCell>
-              <TableCell>{row.date}</TableCell>
-              <TableCell align="right">{`${row.status}`}</TableCell>
+
+          {appData.response && appData.response.map((row) => (
+          <TableRow key={row.ApplicationId}>
+              <TableCell>{row.PositionTitle}</TableCell>
+              <TableCell>{row.CompanyName}</TableCell>
+              <TableCell><a href={row.ApplicationLink}>{row.ApplicationLink}</a></TableCell>
+              <TableCell>{row.ApplicationDate}</TableCell>
+              <TableCell>{`${row.ApplicationStatus}`}</TableCell>
+              <TableCell align="right">
+                <Link href={`/edit-job/${row.ApplicationId}`} >
+                Details
+                </Link>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       <div className={classes.seeMore}>
-        <Link color="primary" href="#" onClick={preventDefault}>
-          See more applications
-        </Link>
+
       </div>
     </React.Fragment>
   );

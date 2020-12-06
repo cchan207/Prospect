@@ -15,7 +15,7 @@ function Home() {
         <div>
             <Navbar />
             <a href="/edit-job">Sign Up</a>
-            <Dashboard />
+            <Dashboard/>
         </div>
     )
 }

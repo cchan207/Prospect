@@ -40,8 +40,8 @@ function App() {
                 <Route exact path="/signup" component={SignUp} />
                 <Route exact path="/home" component={Home} />
                 <Route exact path="/about" component={About} />
-                <Route exact path="/add-job" component={Job} />
-                <Route exact path="/edit-job" component={Edit} />
+                <Route exact path="/add-job/" component={Job} />
+                <Route exact path="/edit-job/:appId" component={Edit} />
               </div>
             </BrowserRouter>
             </Switch>

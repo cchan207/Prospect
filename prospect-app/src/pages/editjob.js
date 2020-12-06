@@ -6,11 +6,12 @@ import Navbar from '../components/navbar-lp';
 import Button from 'react-bootstrap/Button';
 import Container from '@material-ui/core/Container';
 import Form from 'react-bootstrap/Form';
-import { useHistory } from 'react-router-dom'
-
+import { useHistory, useParams } from 'react-router-dom';
 
 export default function Testing() {
-    // Loads page from the top
+  let { appId } = useParams();
+  console.log(appId);
+  // Loads page from the top
     const [jobTitle, setJobTitle] = useState('');
     const [companyName, setCompanyName] = useState('');
 
@@ -35,7 +36,7 @@ export default function Testing() {
         setLocationDisabled(true);
 
 
-        const urlLink = 'http://127.0.0.1:5000/api/v1/search/applications?id=1'; //CHANGE THIS EVENTUALLY
+        const urlLink = `http://127.0.0.1:5000/api/v1/search/applications?id=${appId}`; //CHANGE THIS EVENTUALLY
 
         const fetchApplication = async () => {
           const result = await axios.get(urlLink);
