@@ -78,7 +78,53 @@ class State(db.Model):
 def get_applications():
 	# get userid to find all associated applications
 
+<<<<<<< HEAD
 	userEmail = request.args.get('email')
+=======
+@app.route('/api/v1/delete/applications', methods = ['POST', 'DELETE'])
+def delete_application():
+	# get applicationId to find associate application
+	appId = request.form.get('ApplicationId')
+
+	app = Application.query.filter_by(ApplicationId = appId).first()
+
+	connection = engine.connect()
+	if app:
+		try:
+			application_delete_query = text(
+				'DELETE FROM application WHERE ApplicationId = :a_id;'
+			)
+			engine.execute(application_delete_query, a_id = app.ApplicationId)
+
+			# response
+			responseObject = {
+				'status' : 'success',
+				'message' : 'Sucessfully deleted.'
+			}
+			return make_response(responseObject, 200)
+		except:
+			return make_response({
+				'status' : 'failed',
+				'message' : 'Some error occured !!'
+			}, 400)
+		finally:
+			connection.close()
+	else:
+		responseObject = {
+				'status' : 'fail',
+				'message': 'Application does not exist !!'
+		}
+		return make_response(responseObject, 400)
+
+
+# Takes in applicationId, returns application associated with this applicationId
+@app.route('/api/v1/search/applications', methods = ['GET'])
+def get_application():
+	# get applicationId to find associated application
+
+	#appId = 1; #isabel addition - still trying to get the parameters to send through correctly
+	appId = request.form.get('ApplicationId')
+>>>>>>> 2f8ecb2af83f8df249478600165f3bc11595f8aa
 
 	response = list()
 
@@ -86,9 +132,22 @@ def get_applications():
 		'SELECT * FROM application a JOIN company c ON a.CompanyId = c.CompanyId WHERE a.UserId = (SELECT UserId FROM user WHERE Email = :e_id);'
 	)
 
+<<<<<<< HEAD
 	locations = text(
 		'SELECT c.CityName, s.StateAbbr FROM applicationlocation al JOIN city c JOIN state s ON al.CityId = c.CityId AND al.StateId = s.StateId WHERE al.ApplicationId = :a_id ORDER BY c.CityName ASC, s.StateAbbr ASC;'
 	)
+=======
+		response = list()
+		response.append({
+			"userId" : app.UserId,
+			"companyId" : app.CompanyId,
+			"companyName" : company.CompanyName,
+			"positionTitle" : app.PositionTitle,
+			"appLink" : app.ApplicationLink,
+			"appStatus" : app.ApplicationStatus,
+			"appDate" : app.ApplicationDate # TODO: potentially have to fix date formatting
+		})
+>>>>>>> 2f8ecb2af83f8df249478600165f3bc11595f8aa
 
 	basicInfo = engine.execute(info, e_id = userEmail)
 
