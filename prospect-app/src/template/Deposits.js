@@ -23,9 +23,9 @@ const status_summary_url = '/api/v1/count/applications/status';
 export default function Deposits() {
   const classes = useStyles();
 
-  const [pending, setPending] = useState('');
-  const [denied, setDenied] = useState('');
-  const [accepted, setAccepted] = useState('');
+  const [pending, setPending] = useState(-1);
+  const [denied, setDenied] = useState(-1);
+  const [accepted, setAccepted] = useState(-1);
   
   useEffect(() => {
     const fetchSummary = async () => {
@@ -40,6 +40,7 @@ export default function Deposits() {
           setDenied(res.data.message[i].Total);
         }
       }
+<<<<<<< HEAD
 
       if (pending == "") {
         setPending(0);
@@ -51,9 +52,21 @@ export default function Deposits() {
         setAccepted(0);
       }
 
+=======
+>>>>>>> dashboard
       console.log(res);
     }
     fetchSummary();
+    
+    if (pending < 0) {
+      setPending(0);
+    } 
+    if (denied < 0) {
+      setDenied(0);
+    }
+    if (accepted < 0) {
+      setAccepted(0);
+    }
   }, [])
 
   return (
@@ -62,21 +75,24 @@ export default function Deposits() {
       <Typography component="p" variant="h8">
         PENDING
       </Typography>
+      {pending >= 0 &&
       <Typography color="textSecondary" className={classes.depositContext}>
         {pending} applications
-      </Typography>
+      </Typography>}
       <Typography component="p" variant="h8">
         DENIED
       </Typography>
+      {denied >= 0 &&
       <Typography color="textSecondary" className={classes.depositContext}>
         {denied} applications
-      </Typography>
+      </Typography>}
       <Typography component="p" variant="h8">
         ACCEPTED
       </Typography>
+      {accepted >= 0 &&
       <Typography color="textSecondary" className={classes.depositContext}>
         {accepted} applications
-      </Typography>
+      </Typography>}
       {/* <div>
         <Link color="primary" href="#" onClick={preventDefault}>
           View more
