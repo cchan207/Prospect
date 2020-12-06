@@ -215,7 +215,7 @@ def update_application():
     if app:
         try:
             session = Session()
-            session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+            session.connection(execution_options={'isolation_level': 'REPEATABLE READ'})
 
             # get company object
             comp = session.query(Company).filter_by(CompanyName=compName).first()
@@ -300,7 +300,7 @@ def add_location():
     if app:
         try:
             session = Session()
-            session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+            session.connection(execution_options={'isolation_level': 'REPEATABLE READ'})
 
             # get city id and state id
             city = session.query(City).filter_by(CityName=cityName).first()
@@ -368,7 +368,7 @@ def add_application():
     if user:
         try:
             session = Session()
-            session.connection(execution_options={'isolation_level': 'READ UNCOMMITTED'})
+            session.connection(execution_options={'isolation_level': 'REPEATABLE READ'})
 
             # get unique application id
             id = session.query(func.max(Application.ApplicationId)).scalar() + 1
