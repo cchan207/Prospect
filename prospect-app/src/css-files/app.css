@@ -44,13 +44,72 @@
   border-style: solid;
 }
 
+.dateLabel {
+  padding-right:1%;
+}
+
 .editJobButtons {
   padding-top:5%;
   padding-left:2%;
 }
 
+.editCityName {
+  padding-left:1%;
+}
+
+.saveNewLocation {
+  width:200px;
+  background-color:#ff7b86;
+  border-color: #ff7b86;
+}
+
+.saveNewLocation:hover {
+  background-color:#ff6774;
+  border-color: #ff6774;
+}
+
+.saveNewLocation:focus {
+  background-color:#ff7b86;
+  border-color:#ff7b86;
+  box-shadow:none !important;
+}
+
+.saveNewLocation:active {
+  background: #ff5362 !important;
+  border-color:#ff5362;
+  box-shadow:none !important;
+}
+
+.addLocation {
+  width:200px;
+  background-color:#c000e7;
+  border-color:#c000e7;
+}
+
+.addLocation:disabled {
+  background-color:#bbbbbb;
+  border-color:##bbbbbb;
+}
+
+.addLocation:hover {
+  background-color:#ab00cd;
+  border-color:#ab00cd;
+}
+
+.addLocation:focus {
+  background-color:#c000e7;
+  border-color:#c000e7;
+  box-shadow:none !important;
+}
+
+.addLocation:active {
+  background: #9600b4 !important;
+  border-color:#9600b4;
+  box-shadow:none !important;
+}
+
 .editJob {
-  width:100px;
+  width:200px;
   background-color:#3399ff;
   border-color:#3399ff;
 }
@@ -74,9 +133,25 @@
 }
 
 .updateDatabase {
-  width:100px;
+  width:200px;
   background-color:#00b75c;
   border-color:#00b75c;
+}
+
+.updateDatabase:disabled,
+.updateDatabase:disabled:hover,
+.updateDatabase:disabled:active,
+.updateDatabase:disabled:hover:active {
+  background-color:#bbbbbb;
+  border-color:#bbbbbb;
+}
+
+.addLocation:disabled,
+.addLocation:disabled:hover,
+.addLocation:disabled:active,
+.addLocation:disabled:hover:active {
+  background-color:#bbbbbb;
+  border-color:#bbbbbb;
 }
 
 .updateDatabase:hover {
@@ -97,7 +172,7 @@
 }
 
 .deleteJob {
-  width:100px;
+  width:200px;
   background-color:#ff3333;
   border-color:#ff3333;
 }
