@@ -73,6 +73,11 @@ class State(db.Model):
     StateName = db.Column(db.String(50), nullable = False)
     StateAbbr = db.Column(db.String(2), nullable = False)
 
+@app.after_request
+def set_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+
 @app.route('/api/v1/count/applications/status', methods = ['GET'])
 def get_count_status():
     userEmail = request.args.get('email')
@@ -147,13 +152,14 @@ def get_applications():
                     "ApplicationDate" : inf.ApplicationDate,
                 })
 
-                locationInfo = engine.execute(locations, a_id = inf.ApplicationId)
-                for loc in locationInfo:
-                    response.append({
-                        "CityName" : loc.CityName,
-                        "StateAbbr" : loc.StateAbbr
-                    })
-                    break
+		# locationInfo = engine.execute(locations, a_id = inf.ApplicationId)
+		# for loc in locationInfo:
+		# 	response.append({
+
+		# 		"CityName" : loc.CityName,
+		# 		"StateAbbr" : loc.StateAbbr
+		# 	})
+		# 	break
 
             responseObject = {
                 'response':response,

@@ -44,7 +44,7 @@ export default function NavigationBar() {
                     <Nav className="mr-auto">
                     <Nav.Link href="/about">About us</Nav.Link>
                     <NavDropdown title="Features" id="basic-nav-dropdown">
-                        <NavDropdown.Item href="/#dashboard">Dashboard</NavDropdown.Item>
+                        <NavDropdown.Item href="/home">Dashboard</NavDropdown.Item>
                         <NavDropdown.Item href="/#notes">Notes</NavDropdown.Item>
                     </NavDropdown>
                     </Nav>
