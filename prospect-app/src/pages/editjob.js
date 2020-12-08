@@ -15,7 +15,6 @@ export default function Testing() {
   // Loads page from the top
     const [jobTitle, setJobTitle] = useState('');
     const [companyName, setCompanyName] = useState('');
-
     const [recruiterFirstName, setRecruiterFirstName] = useState('');
     const [recruiterLastName, setRecruiterLastName] = useState('');
     const [recruiterEmail, setRecruiterEmail] = useState('');
@@ -28,7 +27,6 @@ export default function Testing() {
     const [hiddenStatus, setHiddenStatus] = useState('');
     const [locations, setLocations] = useState([{ CityName: "", StateAbbr: "", StateName: "" }]);
     const [oldLocations, setOldLocations] = useState([{ CityName: "", StateAbbr: "", StateName: "" }]);
-    //const [newLocations, setNewLocations] = useState([{ CityName: "", StateName: "" }]);
     const history = useHistory();
 
     // this function is from https://medium.com/javascript-in-plain-english/how-to-deep-copy-objects-and-arrays-in-javascript-7c911359b089
@@ -61,7 +59,7 @@ export default function Testing() {
         setEditDisabled(false);
 
 
-        const urlLink = `http://127.0.0.1:5000/api/v1/search/applications?id=${appId}`; //CHANGE THIS EVENTUALLY
+        const urlLink = `http://127.0.0.1:5000/api/v1/search/applications?id=${appId}`;
 
         const fetchApplication = async () => {
 
@@ -171,16 +169,16 @@ export default function Testing() {
 
     const deleteTheJob = async (e) => {
         console.log("Delete Job");
-        const urlLink = "http://127.0.0.1:5000/api/v1/delete/applications"; //ADD PARAMETERS: applicaiton id
-        const res = await axios.post(urlLink,`id=${appId}`);
-        history.push('/home');
+        const urlLink = "http://127.0.0.1:5000/api/v1/delete/applications";
+        const res = axios.post(urlLink,`id=${appId}`).finally(() => {
+          history.push('/home');
+        });
     }
 
     const saveNewLocation = (e) => {
         console.log("Save New Location");
 
-        const urlLink = "http://127.0.0.1:5000/api/v1/add/locations"; //ADD PARAMETERS: application id, city name, city state
-        //const id = 10; //TEMPPPPPPPPPPP
+        const urlLink = "http://127.0.0.1:5000/api/v1/add/locations";
         const entry = locations.slice(-1)[0];
         const res = axios.post(urlLink,`id=${appId}&city=${entry.CityName}&state=${entry.StateName}`);
 
@@ -250,9 +248,15 @@ export default function Testing() {
                 <Form.Label className="editText">Company</Form.Label>
                 <Form.Control disabled={disabledStatus} type="text" className="editValue" value={companyName} onChange={handleCompany}/>
             </Form.Group>
+
             <Form.Group className="editRows">
                 <Form.Label className="editText">Current Status</Form.Label>
-                <Form.Control disabled={disabledStatus} type="text" className="editValue" value={status} onChange={handleStatus}/>
+                <Form.Control disabled={disabledStatus} as="select" onChange={handleStatus} value={status}>
+                    <option value="Select status" disabled>Select status</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="ACCEPTED">Accepted</option>
+                    <option value="DENIED">Denied</option>
+                </Form.Control>
             </Form.Group>
             <Form.Group className="editRows">
                 <Form.Label className="editText">Application Link</Form.Label>
