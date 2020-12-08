@@ -78,6 +78,47 @@ def set_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
+@app.route('/api/v1/search/users/', methods = ['GET'])
+def add_user():
+    email = request.args.get('email')
+    print(email)
+
+    user = User.query.filter_by(Email=email).first()
+
+    if user:
+        print('found the user!')
+        print(user.Email)
+        print(user.UserId)
+        responseObject = {
+                'status' : 'success',
+                'message': 'User is already in database !!'
+        }
+        return make_response(responseObject, 200)
+    else:
+        user = User(
+            UserId = db.session.query(func.max(User.UserId)).scalar() + 1,
+            FirstName = 'First',
+            LastName = 'Last',
+            Email = email)
+        print(user.UserId)
+        db.session.add(user)
+        db.session.commit()
+        return make_response({
+                        'status' : 'success',
+                        'message' : 'Added user to table!'
+                    }, 200)
+
+@app.route('/api/v1/all/users/', methods = ['GET'])
+def all_users():
+    all = User.query.all()
+    for user in all:
+        print(str(user.UserId) + ' ' + user.Email)
+    return make_response({
+                        'status' : 'success',
+                        'message' : 'hahah!'
+                    }, 200)
+
+
 @app.route('/api/v1/count/applications/status', methods = ['GET'])
 def get_count_status():
     userEmail = request.args.get('email')
@@ -455,6 +496,7 @@ def add_application():
     recLastName = request.form.get('recLast')
     recEmail = request.form.get('recEmail')
     recPhone = request.form.get('recPhone')
+    print(appState)
 
     user = User.query.filter_by(Email = userEmail).first()
 
@@ -519,6 +561,7 @@ def add_application():
 
             # get city id and state id
             city = session.query(City).filter_by(CityName=appCity).first()
+            print(appState)
             stateId = session.query(State.StateId).filter_by(StateName=appState).first()[0]
 
             # add city if not in city table
@@ -546,7 +589,9 @@ def add_application():
                 'status' : 'success',
                 'message': 'Sucessfully registered.'
             }, 200)
-        except:
+        except Exception as e:
+            # raise e
+            print('exception')
             session.rollback()
             return make_response({
                 'status' : 'failed',
@@ -555,6 +600,8 @@ def add_application():
         finally:
             session.close()
     else:
+
+        print('ah yes')
         return make_response({
             'status' : 'failed',
             'message' : 'User does not exist !!'
