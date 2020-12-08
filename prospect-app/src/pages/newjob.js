@@ -19,12 +19,12 @@ export default function LandingPage() {
     const [company, setCompany] = useState('');
     const [appLink, setAppLink] = useState('');
     const [city, setCity] = useState('');
-    const [state, setState] = useState('');
+    const [state, setState] = useState('Alabama'); // used to be ''
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [appStatus, setAppStatus] = useState('');
+    const [appStatus, setAppStatus] = useState('PENDING'); //used to be ''
 
     const history = useHistory();
 

@@ -193,8 +193,8 @@ export default function Testing() {
         setHiddenStatus(false);
         setEditDisabled(true);
         setDisabledStatus(true);
-        setLocations([...locations, { CityName: "", StateAbbr: "", StateName: "" }]);
-        setOldLocations([...oldLocations, { CityName: "", StateAbbr: "", StateName: "" }]);
+        setLocations([...locations, { CityName: "", StateAbbr: "", StateName: "Alabama" }]); //used to be ""
+        setOldLocations([...oldLocations, { CityName: "", StateAbbr: "", StateName: "Alabama" }]); //used to be ""
     }
 
     const updateDatabase = (e) => {
