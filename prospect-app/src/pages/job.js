@@ -14,6 +14,7 @@ function Home() {
     return (
         <div>
             <Navbar />
+            <a href="/edit-job">Sign Up</a>
             <Dashboard />
         </div>
     )
@@ -24,7 +25,7 @@ function Home() {
 //     useEffect(() => {
 //         window.scrollTo(0, 0)
 //     }, [])
-    
+
 //     return (
 //         <div>
 //             <Dashboard />
