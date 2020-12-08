@@ -75,6 +75,7 @@ export default function LandingPage() {
 
     const handleEmail = (e) => {
       setEmail(e.target.value);
+      console.log(typeof email)
     }
       
     const handlePhoneNumber = (e) => {

@@ -301,7 +301,7 @@ def update_application():
 
             # get recruiter id based on unique email or phone (one or the other must be provided)
             recruiter = None
-            if recEmail is not None:
+            if recEmail:
                 recruiter = session.query(Recruiter).filter_by(RecEmail=recEmail).first()
             else:
                 recruiter = session.query(Recruiter).filter_by(RecPhone=recPhone).first()
@@ -483,7 +483,7 @@ def add_application():
 
             # get recruiter id based on unique email or phone (one or the other must be provided)
             recruiter = None
-            if recEmail is not None:
+            if recEmail:
                 recruiter = session.query(Recruiter).filter_by(RecEmail=recEmail).first()
             else:
                 recruiter = session.query(Recruiter).filter_by(RecPhone=recPhone).first()
