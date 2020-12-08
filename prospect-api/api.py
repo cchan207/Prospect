@@ -301,7 +301,7 @@ def update_application():
 
             # get recruiter id based on unique email or phone (one or the other must be provided)
             recruiter = None
-            if recEmail is not None:
+            if recEmail:
                 recruiter = session.query(Recruiter).filter_by(RecEmail=recEmail).first()
             else:
                 recruiter = session.query(Recruiter).filter_by(RecPhone=recPhone).first()
@@ -483,7 +483,7 @@ def add_application():
 
             # get recruiter id based on unique email or phone (one or the other must be provided)
             recruiter = None
-            if recEmail is not None:
+            if recEmail:
                 recruiter = session.query(Recruiter).filter_by(RecEmail=recEmail).first()
             else:
                 recruiter = session.query(Recruiter).filter_by(RecPhone=recPhone).first()
@@ -565,7 +565,7 @@ def add_application():
 @app.route('/api/v1/delete/applications', methods = ['POST', 'DELETE'])
 def delete_application():
     # get applicationId to find associate application
-    appId = request.form.get('ApplicationId')
+    appId = request.form.get('id')
 
     try:
         # create a Session

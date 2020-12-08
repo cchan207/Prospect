@@ -28,14 +28,14 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Orders = () => {
-  const { user, isLoading } = useAuth0();
 
   const [appData, setApps] = useState({ message: [] });
-  // const [isError, setIsError] = useState(false);
+  const email = localStorage.getItem('userEmail');
+  console.log(email);
 
   useEffect( async () => {
       const fetchApplications = async () => {
-        const result = await axios.get(localhost + get_applications_api + `?email=chan207@purdue.edu`, { crossorigin:true });
+        const result = await axios.get(localhost + get_applications_api + `?email=${email}`, { crossorigin:true });
         console.log(result.data);
         setApps(result.data);
       }

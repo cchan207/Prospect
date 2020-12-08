@@ -26,10 +26,10 @@ export default function Deposits() {
   const [pending, setPending] = useState(-1);
   const [denied, setDenied] = useState(-1);
   const [accepted, setAccepted] = useState(-1);
-  
+
   useEffect(() => {
     const fetchSummary = async () => {
-      const res = await axios.get(localhost + status_summary_url + '?email=cohen50@purdue.edu')
+      const res = await axios.get(localhost + status_summary_url + `?email=${localStorage.getItem('userEmail')}`);
 
       for (var i = 0; i < res.data.message.length; i++) {
         if (res.data.message[i].ApplicationStatus == "PENDING") {
@@ -43,10 +43,10 @@ export default function Deposits() {
       console.log(res);
     }
     fetchSummary();
-    
+
     if (pending < 0) {
       setPending(0);
-    } 
+    }
     if (denied < 0) {
       setDenied(0);
     }

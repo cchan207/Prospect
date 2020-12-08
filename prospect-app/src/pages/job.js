@@ -14,7 +14,6 @@ function Home() {
     return (
         <div>
             <Navbar />
-            <a href="/edit-job">Sign Up</a>
             <Dashboard/>
         </div>
     )
