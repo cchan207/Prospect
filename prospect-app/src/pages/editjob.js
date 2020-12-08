@@ -11,7 +11,7 @@ import { useHistory, useParams } from 'react-router-dom';
 
 export default function Testing() {
   let { appId } = useParams();
-  //console.log(appId);
+  console.log(appId);
   // Loads page from the top
     const [jobTitle, setJobTitle] = useState('');
     const [companyName, setCompanyName] = useState('');
@@ -169,11 +169,10 @@ export default function Testing() {
         setLocationDisabled(false);
     }
 
-    const deleteTheJob = (e) => {
+    const deleteTheJob = async (e) => {
         console.log("Delete Job");
-      //  const id = 5; //TEMPPPPPPPPPPP
         const urlLink = "http://127.0.0.1:5000/api/v1/delete/applications"; //ADD PARAMETERS: applicaiton id
-        const res = axios.post(urlLink,`id=${appId}`);
+        const res = await axios.post(urlLink,`id=${appId}`);
         history.push('/home');
     }
 
@@ -210,12 +209,10 @@ export default function Testing() {
           const oldCity = oldLocations[i].CityName;
           const newCity = locations[i].CityName;
           const newState = locations[i].StateName;
-        //  const id = 10;
           const res = axios.post(urlLink, `id=${appId}&title=${jobTitle}&link=${link}&company=${companyName}&status=${status}&oldCity=${oldCity}&newCity=${newCity}&newState=${newState}&recFirst=${recruiterFirstName}&recLast=${recruiterLastName}&recEmail=${recruiterEmail}&recPhone=${recruiterPhone}`);
 
         let deepCopiedArray2 = deepCopyFunction(locations);
         setOldLocations(deepCopiedArray2);
-
         }
     }
 
@@ -224,6 +221,9 @@ export default function Testing() {
           <Navbar />
           <div className="editPage">
             <Form className="editJobButtons">
+              <Form.Group>
+                <Button className="editJob" onClick={() => {history.push('/home')}}>Back to Dashboard</Button>
+              </Form.Group>
               <Form.Group>
                 <Button disabled={editDisabled} className="editJob" onClick={enableEdits}>Edit Job</Button>
               </Form.Group>

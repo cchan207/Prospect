@@ -8,6 +8,8 @@ import Button from 'react-bootstrap/Button';
 import LoginButton from '../components/loginButton';
 import AppContext from '../components/context';
 import Col from 'react-bootstrap/Col';
+import { useHistory } from 'react-router-dom';
+
 
 import Navbar from '../components/navbar-lp';
 
@@ -23,12 +25,14 @@ export default function LandingPage() {
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [appStatus, setAppStatus] = useState('');
-      
+
+    const history = useHistory();
+
     useEffect(() => {
         window.scrollTo(0, 0)
     }, [])
 
-    const activateButton = () => {
+    const activateButton = async () => {
         console.log(jobTitle)
         console.log(company)
         console.log(appLink)
@@ -41,8 +45,12 @@ export default function LandingPage() {
         console.log(appStatus)
 
         const urlLink = "http://127.0.0.1:5000/api/v1/add/applications";
-
-        const res = axios.post(urlLink, `userEmail=cohen50@purdue.edu&title=${jobTitle}&link=${appLink}&company=${company}&status=${appStatus}&city=${city}&state=${state}&recFirst=${firstName}&recLast=${lastName}&recEmail=${email}&recPhone=${phoneNumber}`);
+        // const userEmail = localStorage.getItem('userEmail');
+        const userEmail = 'charlorrnot@gmail.com'
+        const res = await axios.post(
+                      urlLink, `userEmail=${userEmail}&title=${jobTitle}&link=${appLink}&company=${company}&status=${appStatus}&city=${city}&state=${state}&recFirst=${firstName}&recLast=${lastName}&recEmail=${email}&recPhone=${phoneNumber}`);
+        console.log(res);
+        history.push('/home');
     }
 
     const handleCompany = (e) => {
@@ -77,7 +85,7 @@ export default function LandingPage() {
       setEmail(e.target.value);
       console.log(typeof email)
     }
-      
+
     const handlePhoneNumber = (e) => {
       setPhoneNumber(e.target.value)
     }
@@ -114,7 +122,7 @@ export default function LandingPage() {
         <Form.Row>
           <Col>
           <Form.Label>City</Form.Label>
-          <Form.Control type="textarea" placeholder="City" onChange={handleCity} value={city}/>    
+          <Form.Control type="textarea" placeholder="City" onChange={handleCity} value={city}/>
           </Col>
           <Col>
           <Form.Label>State</Form.Label>

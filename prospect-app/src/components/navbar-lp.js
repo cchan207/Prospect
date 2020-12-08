@@ -2,22 +2,15 @@ import React, { useState, useContext, useEffect } from 'react';
 import { HashLink as Link } from 'react-router-hash-link';
 import '../css-files/app.css';
 import AppContext from '../components/context';
-import { useAuth0 } from "@auth0/auth0-react";
-
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import LoginButton from './loginButton';
 import LogoutButton from './logoutButton';
 
 export default function NavigationBar() {
-    const { user, isAuthenticated, isLoading } = useAuth0();
 
-    if (!isAuthenticated && isLoading) {
-        return (
-            <div>Loading...</div>
-        )
-    }
+    const isLoggedIn = (localStorage.getItem('userEmail')) != null ? true : false;
 
-    if (isAuthenticated) {
+    if (isLoggedIn) {
         return (
             <Navbar className="navbar" variant="dark" expand="lg">
                 <Navbar.Brand href="/home">PROSPECT</Navbar.Brand>
