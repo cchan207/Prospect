@@ -2,15 +2,17 @@ import React , { useEffect, useState } from 'react';
 import '../css-files/app.css';
 import axios from 'axios';
 
+
 import Navbar from '../components/navbar-lp';
 import Button from 'react-bootstrap/Button';
 import Container from '@material-ui/core/Container';
 import Form from 'react-bootstrap/Form';
-import { useHistory } from 'react-router-dom'
-
+import { useHistory, useParams } from 'react-router-dom';
 
 export default function Testing() {
-    // Loads page from the top
+  let { appId } = useParams();
+  //console.log(appId);
+  // Loads page from the top
     const [jobTitle, setJobTitle] = useState('');
     const [companyName, setCompanyName] = useState('');
 
@@ -29,6 +31,27 @@ export default function Testing() {
     //const [newLocations, setNewLocations] = useState([{ CityName: "", StateName: "" }]);
     const history = useHistory();
 
+    // this function is from https://medium.com/javascript-in-plain-english/how-to-deep-copy-objects-and-arrays-in-javascript-7c911359b089
+    const deepCopyFunction = (inObject) => {
+      let outObject, value, key
+
+      if (typeof inObject !== "object" || inObject === null) {
+        return inObject // Return the value if inObject is not an object
+      }
+
+      // Create an array or object to hold the values
+      outObject = Array.isArray(inObject) ? [] : {}
+
+      for (key in inObject) {
+        value = inObject[key]
+
+        // Recursively (deep) copy for nested objects, including arrays
+        outObject[key] = deepCopyFunction(value)
+      }
+
+      return outObject
+    }
+
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -37,13 +60,19 @@ export default function Testing() {
         setLocationDisabled(true);
         setEditDisabled(false);
 
-        const urlLink = 'http://127.0.0.1:5000/api/v1/search/applications?id=10'; //CHANGE THIS EVENTUALLY ! ! ! ! ! ! ! ! ! !
+
+        const urlLink = `http://127.0.0.1:5000/api/v1/search/applications?id=${appId}`; //CHANGE THIS EVENTUALLY
 
         const fetchApplication = async () => {
-          const result = await axios.get(urlLink);
 
-          setLocations(result.data.Locations);
-          setOldLocations(result.data.Locations);
+          const result = await axios.get(urlLink);
+          const item = result.data.Locations;
+          let deepCopiedArray = deepCopyFunction(item);
+          let deepCopiedArray2 = deepCopyFunction(item);
+
+          setLocations(deepCopiedArray);
+          setOldLocations(deepCopiedArray2);
+
           setCompanyName(result.data.CompanyName);
           setJobTitle(result.data.PositionTitle);
           setLink(result.data.ApplicationLink);
@@ -61,22 +90,44 @@ export default function Testing() {
     }, [])
 
     const handleStateAbbr = (e, index) => {
-      const { name, value } = e.target;
-      console.log(name);
-      console.log(value);
-      const list = [...locations];
-      list[index][name] = value;
-      setLocations(list);
+      // check if the add locaitons this is disabled
+      if (hiddenStatus == false){
+        const { name, value } = e.target;
+        const list = [...oldLocations];
+        const list2 = [...locations];
+        list[index][name] = value;
+        let value2 = deepCopyFunction(value);
+        list2[index][name] = value2;
+        setOldLocations(list);
+        setLocations(list2);
 
+      }
+      else{
+        const { name, value } = e.target;
+        const list = [...locations];
+        list[index][name] = value;
+        setLocations(list);
+      }
     }
 
     const handleCityName = (e, index) => {
-      const { name, value } = e.target;
-      console.log(name);
-      console.log(value);
-      const list = [...locations];
-      list[index][name] = value;
-      setLocations(list);
+      if (hiddenStatus == false){
+        const { name, value } = e.target;
+        const list = [...oldLocations];
+        const list2 = [...locations];
+        list[index][name] = value;
+        let value2 = deepCopyFunction(value);
+        list2[index][name] = value2;
+        setOldLocations(list);
+        setLocations(list2);
+      }
+      else{
+        const { name, value } = e.target;
+        const list = [...locations];
+        list[index][name] = value;
+        setLocations(list);
+      }
+
     }
 
     const handleJobTitle = (e) => {
@@ -120,9 +171,9 @@ export default function Testing() {
 
     const deleteTheJob = (e) => {
         console.log("Delete Job");
-        const id = 5; //TEMPPPPPPPPPPP
+      //  const id = 5; //TEMPPPPPPPPPPP
         const urlLink = "http://127.0.0.1:5000/api/v1/delete/applications"; //ADD PARAMETERS: applicaiton id
-        //const res = axios.post(urlLink,`id=${id}`);
+        const res = axios.post(urlLink,`id=${appId}`);
         history.push('/home');
     }
 
@@ -130,9 +181,9 @@ export default function Testing() {
         console.log("Save New Location");
 
         const urlLink = "http://127.0.0.1:5000/api/v1/add/locations"; //ADD PARAMETERS: application id, city name, city state
-        const id = 5; //TEMPPPPPPPPPPP
+        //const id = 10; //TEMPPPPPPPPPPP
         const entry = locations.slice(-1)[0];
-        const res = axios.post(urlLink,`id=${id}&city=${entry.CityName}&state=${entry.StateName}`);
+        const res = axios.post(urlLink,`id=${appId}&city=${entry.CityName}&state=${entry.StateName}`);
 
         setEditDisabled(true);
         setHiddenStatus(true);
@@ -146,7 +197,7 @@ export default function Testing() {
         setEditDisabled(true);
         setDisabledStatus(true);
         setLocations([...locations, { CityName: "", StateAbbr: "", StateName: "" }]);
-        setOldLocations([...locations, { CityName: "", StateAbbr: "", StateName: "" }]);
+        setOldLocations([...oldLocations, { CityName: "", StateAbbr: "", StateName: "" }]);
     }
 
     const updateDatabase = (e) => {
@@ -154,39 +205,16 @@ export default function Testing() {
         setDisabledStatus(true);
         setLocationDisabled(true);
         setEditDisabled(false);
-        const urlLink = "http://127.0.0.1:5000/api/v1/update/applications";
+        const urlLink = 'http://127.0.0.1:5000/api/v1/update/applications';
         for (var i = 0; i < locations.length; i++){
           const oldCity = oldLocations[i].CityName;
           const newCity = locations[i].CityName;
           const newState = locations[i].StateName;
-          const id = 10;
-          console.log("BEFORE");
-          console.log(oldCity);
-          console.log(newCity);
-          console.log(newState);
-          console.log(id);
-          console.log(jobTitle);
-          console.log(link);
-          console.log(companyName);
-          console.log(status);
+        //  const id = 10;
+          const res = axios.post(urlLink, `id=${appId}&title=${jobTitle}&link=${link}&company=${companyName}&status=${status}&oldCity=${oldCity}&newCity=${newCity}&newState=${newState}&recFirst=${recruiterFirstName}&recLast=${recruiterLastName}&recEmail=${recruiterEmail}&recPhone=${recruiterPhone}`);
 
-           //TEMPPPPPPPPPPP
-          axios.post(urlLink, {
-              id: `${id}`,
-              title: `${jobTitle}`,
-              company: `${companyName}`,
-              status: `${status}`,
-              oldCity: `${oldCity}`,
-              newCity: `${newCity}`,
-              newState: `${newState}`
-          })
-          .then (function (response) {
-            console.log(response);
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
-
+        let deepCopiedArray2 = deepCopyFunction(locations);
+        setOldLocations(deepCopiedArray2);
 
         }
     }

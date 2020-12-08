@@ -73,6 +73,11 @@ class State(db.Model):
     StateName = db.Column(db.String(50), nullable = False)
     StateAbbr = db.Column(db.String(2), nullable = False)
 
+@app.after_request
+def set_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+
 @app.route('/api/v1/count/applications/status', methods = ['GET'])
 def get_count_status():
     userEmail = request.args.get('email')
@@ -147,13 +152,14 @@ def get_applications():
                     "ApplicationDate" : inf.ApplicationDate,
                 })
 
-                locationInfo = engine.execute(locations, a_id = inf.ApplicationId)
-                for loc in locationInfo:
-                    response.append({
-                        "CityName" : loc.CityName,
-                        "StateAbbr" : loc.StateAbbr
-                    })
-                    break
+		# locationInfo = engine.execute(locations, a_id = inf.ApplicationId)
+		# for loc in locationInfo:
+		# 	response.append({
+
+		# 		"CityName" : loc.CityName,
+		# 		"StateAbbr" : loc.StateAbbr
+		# 	})
+		# 	break
 
             responseObject = {
                 'response':response,
@@ -341,7 +347,7 @@ def update_application():
                     session.add(city)
                 else:
                     cityId = newCity.CityId
-                
+
                 # update old location from application location table
                 oldLocation = session.query(Applicationlocation) \
                             .filter_by(ApplicationId=appId, CityId=oldCity.CityId) \
@@ -367,7 +373,7 @@ def update_application():
                 'message' : 'Some error occured !!'
             }, 400)
         finally:
-            session.close() 
+            session.close()
     else:
         return make_response({
             'status' : 'failed',
@@ -510,7 +516,7 @@ def add_application():
 
             # add application to application table
             session.add(app)
-            
+
             # get city id and state id
             city = session.query(City).filter_by(CityName=appCity).first()
             stateId = session.query(State.StateId).filter_by(StateName=appState).first()[0]
@@ -559,7 +565,7 @@ def add_application():
 @app.route('/api/v1/delete/applications', methods = ['POST', 'DELETE'])
 def delete_application():
     # get applicationId to find associate application
-    appId = request.form.get('ApplicationId')
+    appId = request.form.get('id')
 
     try:
         # create a Session
