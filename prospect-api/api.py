@@ -565,7 +565,7 @@ def add_application():
 @app.route('/api/v1/delete/applications', methods = ['POST', 'DELETE'])
 def delete_application():
     # get applicationId to find associate application
-    appId = request.form.get('ApplicationId')
+    appId = request.form.get('id')
 
     try:
         # create a Session

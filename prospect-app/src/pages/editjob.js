@@ -11,7 +11,7 @@ import { useHistory, useParams } from 'react-router-dom';
 
 export default function Testing() {
   let { appId } = useParams();
-  console.log(appId);
+  //console.log(appId);
   // Loads page from the top
     const [jobTitle, setJobTitle] = useState('');
     const [companyName, setCompanyName] = useState('');
@@ -90,23 +90,43 @@ export default function Testing() {
     }, [])
 
     const handleStateAbbr = (e, index) => {
-      const { name, value } = e.target;
-      console.log(name);
-      console.log(value);
-      const list = [...locations];
-      list[index][name] = value;
-      setLocations(list);
+      // check if the add locaitons this is disabled
+      if (hiddenStatus == false){
+        const { name, value } = e.target;
+        const list = [...oldLocations];
+        const list2 = [...locations];
+        list[index][name] = value;
+        let value2 = deepCopyFunction(value);
+        list2[index][name] = value2;
+        setOldLocations(list);
+        setLocations(list2);
 
-
+      }
+      else{
+        const { name, value } = e.target;
+        const list = [...locations];
+        list[index][name] = value;
+        setLocations(list);
+      }
     }
 
     const handleCityName = (e, index) => {
-      const { name, value } = e.target;
-      console.log(name);
-      console.log(value);
-      const list = [...locations];
-      list[index][name] = value;
-      setLocations(list);
+      if (hiddenStatus == false){
+        const { name, value } = e.target;
+        const list = [...oldLocations];
+        const list2 = [...locations];
+        list[index][name] = value;
+        let value2 = deepCopyFunction(value);
+        list2[index][name] = value2;
+        setOldLocations(list);
+        setLocations(list2);
+      }
+      else{
+        const { name, value } = e.target;
+        const list = [...locations];
+        list[index][name] = value;
+        setLocations(list);
+      }
 
     }
 
@@ -151,9 +171,9 @@ export default function Testing() {
 
     const deleteTheJob = (e) => {
         console.log("Delete Job");
-        const id = 5; //TEMPPPPPPPPPPP
+      //  const id = 5; //TEMPPPPPPPPPPP
         const urlLink = "http://127.0.0.1:5000/api/v1/delete/applications"; //ADD PARAMETERS: applicaiton id
-        //const res = axios.post(urlLink,`id=${id}`);
+        const res = axios.post(urlLink,`id=${appId}`);
         history.push('/home');
     }
 
@@ -161,9 +181,9 @@ export default function Testing() {
         console.log("Save New Location");
 
         const urlLink = "http://127.0.0.1:5000/api/v1/add/locations"; //ADD PARAMETERS: application id, city name, city state
-        const id = 10; //TEMPPPPPPPPPPP
+        //const id = 10; //TEMPPPPPPPPPPP
         const entry = locations.slice(-1)[0];
-        const res = axios.post(urlLink,`id=${id}&city=${entry.CityName}&state=${entry.StateName}`);
+        const res = axios.post(urlLink,`id=${appId}&city=${entry.CityName}&state=${entry.StateName}`);
 
         setEditDisabled(true);
         setHiddenStatus(true);
@@ -190,9 +210,8 @@ export default function Testing() {
           const oldCity = oldLocations[i].CityName;
           const newCity = locations[i].CityName;
           const newState = locations[i].StateName;
-          const id = 10;
-
-          const res = axios.post(urlLink, `id=${id}&title=${jobTitle}&link=${link}&company=${companyName}&status=${status}&oldCity=${oldCity}&newCity=${newCity}&newState=${newState}&recFirst=${recruiterFirstName}&recLast=${recruiterLastName}&recEmail=${recruiterEmail}&recPhone=${recruiterPhone}`);
+        //  const id = 10;
+          const res = axios.post(urlLink, `id=${appId}&title=${jobTitle}&link=${link}&company=${companyName}&status=${status}&oldCity=${oldCity}&newCity=${newCity}&newState=${newState}&recFirst=${recruiterFirstName}&recLast=${recruiterLastName}&recEmail=${recruiterEmail}&recPhone=${recruiterPhone}`);
 
         let deepCopiedArray2 = deepCopyFunction(locations);
         setOldLocations(deepCopiedArray2);
