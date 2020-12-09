@@ -1,5 +1,5 @@
 # Prospect
-CS348 Team NULL \
+CS348 Team NULL
 
 Prospect was inspired by the team's own job search experiences. This job application tracker allows users to organize application information like position title, company, location, recruiter, and application status in one central location. The dashboard displays each job application along with summary statistics and charts.
 
