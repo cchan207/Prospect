@@ -19,12 +19,12 @@ export default function LandingPage() {
     const [company, setCompany] = useState('');
     const [appLink, setAppLink] = useState('');
     const [city, setCity] = useState('');
-    const [state, setState] = useState('');
+    const [state, setState] = useState('Alabama'); // used to be ''
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [appStatus, setAppStatus] = useState('');
+    const [appStatus, setAppStatus] = useState('PENDING'); //used to be ''
 
     const history = useHistory();
 
@@ -45,8 +45,8 @@ export default function LandingPage() {
         console.log(appStatus)
 
         const urlLink = "http://127.0.0.1:5000/api/v1/add/applications";
-        // const userEmail = localStorage.getItem('userEmail');
-        const userEmail = 'charlorrnot@gmail.com'
+         const userEmail = localStorage.getItem('userEmail');
+      //  const userEmail = 'charlorrnot@gmail.com'
         const res = await axios.post(
                       urlLink, `userEmail=${userEmail}&title=${jobTitle}&link=${appLink}&company=${company}&status=${appStatus}&city=${city}&state=${state}&recFirst=${firstName}&recLast=${lastName}&recEmail=${email}&recPhone=${phoneNumber}`);
         console.log(res);
